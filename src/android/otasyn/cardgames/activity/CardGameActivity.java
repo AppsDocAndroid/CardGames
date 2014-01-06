@@ -75,7 +75,11 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     }
 
     protected boolean isCurrentUserTurn() {
-        return getCurrentUser().equals(getLatestAction().getNextActionPlayer());
+        if (getCurrentUser() != null && getLatestAction() != null) {
+            return getCurrentUser().equals(getLatestAction().getNextActionPlayer());
+        } else {
+            return false;
+        }
     }
 
     @Override

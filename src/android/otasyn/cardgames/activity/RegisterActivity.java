@@ -9,7 +9,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.otasyn.cardgames.MainActivity;
+import android.otasyn.cardgames.activity.MainActivity;
 import android.otasyn.cardgames.R;
 import android.otasyn.cardgames.communication.utility.AccountUtility;
 import android.view.View;

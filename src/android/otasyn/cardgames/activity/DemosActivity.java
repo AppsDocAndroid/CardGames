@@ -1,9 +1,10 @@
-package android.otasyn.cardgames;
+package android.otasyn.cardgames.activity;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.otasyn.cardgames.R;
 import android.view.View;
 import android.widget.Button;
 

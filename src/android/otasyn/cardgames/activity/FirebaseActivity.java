@@ -3,10 +3,11 @@
  * Zachary Evans
  * CS7020 - Term Project
  */
-package android.otasyn.cardgames;
+package android.otasyn.cardgames.activity;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.otasyn.cardgames.activity.view.GameView;
 
 public class FirebaseActivity extends Activity {
     
