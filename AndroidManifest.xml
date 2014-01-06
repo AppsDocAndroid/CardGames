@@ -33,10 +33,10 @@
             android:name=".FirebaseActivity"
             android:label="@string/titleActivityGame" >
         </activity>
-        <activity android:name=".manage.account.activity.LoginActivity"/>
-        <activity android:name=".manage.account.activity.RegisterActivity"/>
-        <activity android:name=".manage.account.activity.FriendsListActivity"/>
-        <activity android:name=".manage.account.activity.GamesListActivity"/>
+        <activity android:name=".activity.LoginActivity"/>
+        <activity android:name=".activity.RegisterActivity"/>
+        <activity android:name=".activity.FriendsListActivity"/>
+        <activity android:name=".activity.GamesListActivity"/>
         <activity android:name=".AndEngineActivity"/>
         <activity android:name=".Cards46x64Activity"/>
         <activity android:name=".Cards92x128Activity"/>
