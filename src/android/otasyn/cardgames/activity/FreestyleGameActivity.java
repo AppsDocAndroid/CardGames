@@ -96,7 +96,7 @@ public class FreestyleGameActivity extends CardGameActivity {
     private void evaluateCardLocation(final CardSprite cardSprite) {
         if (cardSprite != null) {
             Debug.d("CardGames", "evaulateCardLocation: " + cardSprite.getCard());
-            if (cardSprite.getY() + cardSprite.getHeight() >= CAMERA_HEIGHT) {
+            if (cardSprite.getY() + cardSprite.getHeight() >= getCameraHeight()) {
                 if (getLatestAction() != null
                         && getLatestAction().getGameState() != null
                         && getLatestAction().getGameState().getHands() != null) {
@@ -323,7 +323,7 @@ public class FreestyleGameActivity extends CardGameActivity {
         if (deckButton == null) {
             if (getRedBack() != null) {
                 float deckX = 20f;
-                float deckY = (CAMERA_HEIGHT / 2f) - (getRedBack().getHeight() / 2f) ;
+                float deckY = (getCameraHeight() / 2f) - (getRedBack().getHeight() / 2f) ;
 
                 deckButton = new ButtonSprite(
                         deckX, deckY,
@@ -362,7 +362,7 @@ public class FreestyleGameActivity extends CardGameActivity {
                     for (Card card : Card.values()) {
                         if (hand.contains(card)) {
                             CardSprite cardSprite = getCardSprite(card);
-                            float y = CAMERA_HEIGHT - cardSprite.getHeight();
+                            float y = getCameraHeight() - cardSprite.getHeight();
                             cardSprite.setX(x);
                             cardSprite.setY(y);
                             cardSprite.showFace();
@@ -372,7 +372,7 @@ public class FreestyleGameActivity extends CardGameActivity {
                         }
                     }
                 } else {
-                    int x = CAMERA_WIDTH - startX;
+                    int x = getCameraWidth() - startX;
                     for (Card card : Card.values()) {
                         if (hand.contains(card)) {
                             CardSprite cardSprite = getCardSprite(card);
@@ -459,8 +459,8 @@ public class FreestyleGameActivity extends CardGameActivity {
         if (freestyleState != null) {
             for (Map.Entry<Card,BoardCard> boardEntry : freestyleState.getBoard().entrySet()) {
                 BoardCard boardCard = boardEntry.getValue();
-                boardCard.setX(CAMERA_WIDTH - boardCard.getX());
-                boardCard.setY(CAMERA_HEIGHT - boardCard.getY());
+                boardCard.setX(getCameraWidth() - boardCard.getX());
+                boardCard.setY(getCameraHeight() - boardCard.getY());
             }
         }
     }

@@ -2,12 +2,18 @@ package android.otasyn.cardgames.activity;
 
 import android.graphics.Typeface;
 import android.otasyn.cardgames.scene.CardGameScene;
+import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
 
 public class BlackjackGameActivity extends CardGameActivity {
 
     private Font boldFont;
+
+    @Override
+    protected void onBeforeCreateEngineOptions() {
+        setScreenOrientation(ScreenOrientation.LANDSCAPE_FIXED);
+    }
 
     @Override
     protected void onCreateCardGameResources() {

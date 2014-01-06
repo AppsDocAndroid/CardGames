@@ -14,6 +14,7 @@ import android.otasyn.cardgames.utility.enumeration.Card;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
+import org.andengine.engine.options.resolutionpolicy.IResolutionPolicy;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.SpriteBackground;
@@ -32,13 +33,21 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     public static final String GAME_INFO = "game_info";
     public static final String CURRENT_USER = "current_user";
 
-    protected static int CAMERA_WIDTH = 720;
-    protected static int CAMERA_HEIGHT = 1280;
+    protected static int DEFAULT_PORTRAIT_CAMERA_WIDTH = 720;
+    protected static int DEFAULT_PORTRAIT_CAMERA_HEIGHT = 1280;
+    protected static int DEFAULT_LANDSCAPE_CAMERA_WIDTH = 1280;
+    protected static int DEFAULT_LANDSCAPE_CAMERA_HEIGHT = 720;
+
+    private int cameraWidth;
+    private int cameraHeight;
 
     private Game game;
     private SimpleUser currentUser;
     private GameAction latestAction;
     private Handler latestActionHandler;
+
+    private ScreenOrientation screenOrientation;
+    private IResolutionPolicy resolutionPolicy;
 
     private ITextureRegion backgroundTextureRegion;
     private ITextureRegion[] gameMenuButtonRegion;
@@ -49,6 +58,22 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     private ButtonSprite gameMenuButton;
 
     private CardGameScene cardGameScene;
+
+    protected int getCameraWidth() {
+        return cameraWidth;
+    }
+
+    protected void setCameraWidth(final int cameraWidth) {
+        this.cameraWidth = cameraWidth;
+    }
+
+    protected int getCameraHeight() {
+        return cameraHeight;
+    }
+
+    protected void setCameraHeight(final int cameraHeight) {
+        this.cameraHeight = cameraHeight;
+    }
 
     public Game getGame() {
         return game;
@@ -75,15 +100,40 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     }
 
     protected boolean isCurrentUserTurn() {
-        if (getCurrentUser() != null && getLatestAction() != null) {
-            return getCurrentUser().equals(getLatestAction().getNextActionPlayer());
-        } else {
-            return false;
-        }
+        return getCurrentUser() != null && getLatestAction() != null
+                && getCurrentUser().equals(getLatestAction().getNextActionPlayer());
+    }
+
+    protected void setScreenOrientation(final ScreenOrientation screenOrientation) {
+        this.screenOrientation = screenOrientation;
+    }
+
+    protected void setResolutionPolicy(final IResolutionPolicy resolutionPolicy) {
+        this.resolutionPolicy = resolutionPolicy;
     }
 
     @Override
     public EngineOptions onCreateEngineOptions() {
+        onBeforeCreateEngineOptions();
+        if (screenOrientation == null) {
+            setScreenOrientation(ScreenOrientation.PORTRAIT_FIXED);
+        }
+        if (resolutionPolicy == null) {
+            switch (screenOrientation) {
+                case PORTRAIT_FIXED:
+                case PORTRAIT_SENSOR:
+                    setCameraWidth(DEFAULT_PORTRAIT_CAMERA_WIDTH);
+                    setCameraHeight(DEFAULT_PORTRAIT_CAMERA_HEIGHT);
+                    break;
+                case LANDSCAPE_FIXED:
+                case LANDSCAPE_SENSOR:
+                default:
+                    setCameraWidth(DEFAULT_LANDSCAPE_CAMERA_WIDTH);
+                    setCameraHeight(DEFAULT_LANDSCAPE_CAMERA_HEIGHT);
+            }
+            setResolutionPolicy(new RatioResolutionPolicy(getCameraWidth(), getCameraHeight()));
+        }
+
         setTheme(R.style.GameBoardTheme);
 
         updateInfo();
@@ -91,10 +141,11 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
         latestActionHandler = new LatestActionHandler();
         new Timer().scheduleAtFixedRate(new LatestActionTimerTask(), 5000, 5000);
 
-        final Camera camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-        return new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED,
-                new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), camera);
+        return new EngineOptions(true, screenOrientation, resolutionPolicy,
+                                 new Camera(0, 0, getCameraWidth(), getCameraHeight()));
     }
+
+    protected void onBeforeCreateEngineOptions() { }
 
     private void updateInfo() {
         game = getIntent().getParcelableExtra(GAME_INFO);
@@ -142,7 +193,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
 
     @Override
     final protected void onCreateResources() {
-        this.backgroundTextureRegion = TextureUtility.loadBackground(this, CAMERA_WIDTH, CAMERA_HEIGHT);
+        this.backgroundTextureRegion = TextureUtility.loadBackground(this, getCameraWidth(), getCameraHeight());
         gameMenuButtonRegion = TextureUtility.loadGameMenuButton(this);
         onCreateCardGameResources();
         if (this.cardTextureRegions == null) {
@@ -176,7 +227,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
         cardGameScene.setBackground(new SpriteBackground(bgSprite));
 
         float x = 10;
-        float y = CAMERA_HEIGHT - (gameMenuButtonRegion[TextureUtility.BUTTON_STATE_DOWN].getHeight() + 10);
+        float y = getCameraHeight() - (gameMenuButtonRegion[TextureUtility.BUTTON_STATE_DOWN].getHeight() + 10);
         gameMenuButton = new ButtonSprite(
                 x, y,
                 gameMenuButtonRegion[TextureUtility.BUTTON_STATE_UP],
