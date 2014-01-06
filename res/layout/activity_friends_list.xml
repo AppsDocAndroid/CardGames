@@ -15,11 +15,14 @@
             android:textSize="@dimen/titleTextSize"
             android:layout_marginBottom="@dimen/titleBottomMargin"/>
 
-    <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/friendsListLayout">
-    </LinearLayout>
+    <ScrollView android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/friendsListLayout">
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>
