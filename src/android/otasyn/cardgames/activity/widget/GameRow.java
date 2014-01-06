@@ -88,9 +88,9 @@ public class GameRow extends LinearLayout {
             GameRow gameRow = (GameRow) v;
             Game game = gameRow.getGame();
             SimpleUser currentUser = gameRow.getCurrentUser();
-            onClick(gameRow, game, currentUser);
+            onClick(game, gameRow, currentUser);
         }
 
-        public abstract void onClick(GameRow gameRow, Game game, SimpleUser currentUser);
+        public abstract void onClick(Game game, GameRow gameRow, SimpleUser currentUser);
     }
 }

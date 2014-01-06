@@ -141,6 +141,9 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
         this.backgroundTextureRegion = TextureUtility.loadBackground(this, CAMERA_WIDTH, CAMERA_HEIGHT);
         gameMenuButtonRegion = TextureUtility.loadGameMenuButton(this);
         onCreateCardGameResources();
+        if (this.cardTextureRegions == null) {
+            setCardTextureRegions(TextureUtility.loadCards92x128(this));
+        }
     }
 
     protected abstract void onCreateCardGameResources();
