@@ -8,16 +8,12 @@ package android.otasyn.cardgames.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.otasyn.cardgames.activity.GameMenuActivity;
-import android.otasyn.cardgames.activity.FriendsListActivity;
-import android.otasyn.cardgames.activity.GamesListActivity;
-import android.otasyn.cardgames.activity.LoginActivity;
-import android.otasyn.cardgames.activity.RegisterActivity;
 import android.otasyn.cardgames.communication.dto.SimpleUser;
 import android.otasyn.cardgames.communication.utility.AccountUtility;
 import android.otasyn.cardgames.scene.GameMenuScene;
 import android.otasyn.cardgames.utility.TextureUtility;
 import org.andengine.entity.sprite.ButtonSprite;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.opengl.font.Font;
@@ -33,12 +29,14 @@ public class MainActivity extends GameMenuActivity {
         context.startActivity(mainIntent);
     }
 
-    private ITextureRegion[] signInButtonRegion;
-    private ITextureRegion[] signOutButtonRegion;
-    private ITextureRegion[] registerButtonRegion;
-    private ITextureRegion[] demosButtonRegion;
-    private ITextureRegion[] friendsButtonRegion;
-    private ITextureRegion[] gamesButtonRegion;
+    private ITextureRegion logoTextureRegion;
+
+    private ITextureRegion[] signInButtonTextureRegions;
+    private ITextureRegion[] signOutButtonTextureRegions;
+    private ITextureRegion[] registerButtonTextureRegions;
+    private ITextureRegion[] demosButtonTextureRegions;
+    private ITextureRegion[] friendsButtonTextureRegions;
+    private ITextureRegion[] gamesButtonTextureRegions;
 
     private GameMenuScene scene;
     private ButtonSprite signInButton;
@@ -48,8 +46,7 @@ public class MainActivity extends GameMenuActivity {
     private ButtonSprite friendsButton;
     private ButtonSprite gamesButton;
 
-    private float demosLoggedOutY = 395;
-    private float demosLoggedInY = 310;
+    private float startY = 500;
 
     private SimpleUser currentUser;
 
@@ -61,12 +58,14 @@ public class MainActivity extends GameMenuActivity {
 
     @Override
     protected void onCreateGameMenuResources() {
-        signInButtonRegion = TextureUtility.loadSignInButton(this);
-        signOutButtonRegion = TextureUtility.loadSignOutButton(this);
-        registerButtonRegion = TextureUtility.loadRegisterButton(this);
-        demosButtonRegion = TextureUtility.loadDemosButton(this);
-        friendsButtonRegion = TextureUtility.loadFriendsButton(this);
-        gamesButtonRegion = TextureUtility.loadGamesButton(this);
+        logoTextureRegion = TextureUtility.loadLogo(this);
+
+        signInButtonTextureRegions = TextureUtility.loadSignInButton(this);
+        signOutButtonTextureRegions = TextureUtility.loadSignOutButton(this);
+        registerButtonTextureRegions = TextureUtility.loadRegisterButton(this);
+        demosButtonTextureRegions = TextureUtility.loadDemosButton(this);
+        friendsButtonTextureRegions = TextureUtility.loadFriendsButton(this);
+        gamesButtonTextureRegions = TextureUtility.loadGamesButton(this);
 
         boldFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
                 Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32);
@@ -89,16 +88,24 @@ public class MainActivity extends GameMenuActivity {
                 new TextOptions(HorizontalAlign.LEFT), getVertexBufferObjectManager());
         scene.attachChild(emailText);
 
+        float logoWidth = 256;
+        float logoHeight = 256;
+        float logoX = (CAMERA_WIDTH - logoWidth) / 2;
+        float logoY = 150;
+        final Sprite logo = new Sprite(logoX, logoY, logoWidth, logoHeight, logoTextureRegion,
+                                       this.getVertexBufferObjectManager());
+        scene.attachChild(logo);
+
         //
         // Both Logged In and Not Logged In
         //
 
-        float start = demosLoggedOutY;
+        float start = startY;
         demosButton = new ButtonSprite(
                 buttonPadding, start,
-                demosButtonRegion[TextureUtility.BUTTON_STATE_UP],
-                demosButtonRegion[TextureUtility.BUTTON_STATE_DOWN],
-                demosButtonRegion[TextureUtility.BUTTON_STATE_DISABLED],
+                demosButtonTextureRegions[TextureUtility.BUTTON_STATE_UP],
+                demosButtonTextureRegions[TextureUtility.BUTTON_STATE_DOWN],
+                demosButtonTextureRegions[TextureUtility.BUTTON_STATE_DISABLED],
                 this.getVertexBufferObjectManager());
         demosButton.setOnClickListener(new DemosClickListener());
         scene.attachChild(demosButton);
@@ -108,23 +115,23 @@ public class MainActivity extends GameMenuActivity {
         // Not Logged In
         //
 
-        start += (demosButtonRegion[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
+        start += (demosButtonTextureRegions[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
         signInButton = new ButtonSprite(
                 buttonPadding, start,
-                signInButtonRegion[TextureUtility.BUTTON_STATE_UP],
-                signInButtonRegion[TextureUtility.BUTTON_STATE_DOWN],
-                signInButtonRegion[TextureUtility.BUTTON_STATE_DISABLED],
+                signInButtonTextureRegions[TextureUtility.BUTTON_STATE_UP],
+                signInButtonTextureRegions[TextureUtility.BUTTON_STATE_DOWN],
+                signInButtonTextureRegions[TextureUtility.BUTTON_STATE_DISABLED],
                 this.getVertexBufferObjectManager());
         signInButton.setOnClickListener(new SignInClickListener());
         scene.attachChild(signInButton);
         scene.registerTouchArea(signInButton);
 
-        start += (signInButtonRegion[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
+        start += (signInButtonTextureRegions[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
         registerButton = new ButtonSprite(
                 buttonPadding, start,
-                registerButtonRegion[TextureUtility.BUTTON_STATE_UP],
-                registerButtonRegion[TextureUtility.BUTTON_STATE_DOWN],
-                registerButtonRegion[TextureUtility.BUTTON_STATE_DISABLED],
+                registerButtonTextureRegions[TextureUtility.BUTTON_STATE_UP],
+                registerButtonTextureRegions[TextureUtility.BUTTON_STATE_DOWN],
+                registerButtonTextureRegions[TextureUtility.BUTTON_STATE_DISABLED],
                 this.getVertexBufferObjectManager());
         registerButton.setOnClickListener(new RegisterClickListener());
         scene.attachChild(registerButton);
@@ -134,34 +141,34 @@ public class MainActivity extends GameMenuActivity {
         // Logged In
         //
 
-        start = (demosLoggedInY + demosButtonRegion[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
+        start = (startY + demosButtonTextureRegions[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
         gamesButton = new ButtonSprite(
                 buttonPadding, start,
-                gamesButtonRegion[TextureUtility.BUTTON_STATE_UP],
-                gamesButtonRegion[TextureUtility.BUTTON_STATE_DOWN],
-                gamesButtonRegion[TextureUtility.BUTTON_STATE_DISABLED],
+                gamesButtonTextureRegions[TextureUtility.BUTTON_STATE_UP],
+                gamesButtonTextureRegions[TextureUtility.BUTTON_STATE_DOWN],
+                gamesButtonTextureRegions[TextureUtility.BUTTON_STATE_DISABLED],
                 this.getVertexBufferObjectManager());
         gamesButton.setOnClickListener(new GamesClickListener());
         scene.attachChild(gamesButton);
         scene.registerTouchArea(gamesButton);
 
-        start += (gamesButtonRegion[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
+        start += (gamesButtonTextureRegions[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
         friendsButton = new ButtonSprite(
                 buttonPadding, start,
-                friendsButtonRegion[TextureUtility.BUTTON_STATE_UP],
-                friendsButtonRegion[TextureUtility.BUTTON_STATE_DOWN],
-                friendsButtonRegion[TextureUtility.BUTTON_STATE_DISABLED],
+                friendsButtonTextureRegions[TextureUtility.BUTTON_STATE_UP],
+                friendsButtonTextureRegions[TextureUtility.BUTTON_STATE_DOWN],
+                friendsButtonTextureRegions[TextureUtility.BUTTON_STATE_DISABLED],
                 this.getVertexBufferObjectManager());
         friendsButton.setOnClickListener(new FriendsClickListener());
         scene.attachChild(friendsButton);
         scene.registerTouchArea(friendsButton);
 
-        start += (friendsButtonRegion[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
+        start += (friendsButtonTextureRegions[TextureUtility.BUTTON_STATE_UP].getHeight() + buttonPadding);
         signOutButton = new ButtonSprite(
                 buttonPadding, start,
-                signOutButtonRegion[TextureUtility.BUTTON_STATE_UP],
-                signOutButtonRegion[TextureUtility.BUTTON_STATE_DOWN],
-                signOutButtonRegion[TextureUtility.BUTTON_STATE_DISABLED],
+                signOutButtonTextureRegions[TextureUtility.BUTTON_STATE_UP],
+                signOutButtonTextureRegions[TextureUtility.BUTTON_STATE_DOWN],
+                signOutButtonTextureRegions[TextureUtility.BUTTON_STATE_DISABLED],
                 this.getVertexBufferObjectManager());
         signOutButton.setOnClickListener(new SignOutClickListener());
         scene.attachChild(signOutButton);
@@ -177,7 +184,6 @@ public class MainActivity extends GameMenuActivity {
 
     private void showLoggedInButtons() {
         demosButton.setVisible(true);
-        demosButton.setPosition(demosButton.getX(), demosLoggedInY);
 
         gamesButton.setVisible(true);
         friendsButton.setVisible(true);
@@ -196,7 +202,6 @@ public class MainActivity extends GameMenuActivity {
 
     private void showLoggedOutButton() {
         demosButton.setVisible(true);
-        demosButton.setPosition(demosButton.getX(), demosLoggedOutY);
 
         gamesButton.setVisible(false);
         friendsButton.setVisible(false);

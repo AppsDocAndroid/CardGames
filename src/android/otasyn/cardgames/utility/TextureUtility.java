@@ -13,6 +13,7 @@ import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.T
 import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.TexturePackLoader;
 import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.TexturePackTextureRegionLibrary;
 import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.exception.TexturePackParseException;
+import org.andengine.opengl.texture.ITexture;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -20,11 +21,15 @@ import org.andengine.opengl.texture.atlas.bitmap.BuildableBitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.source.IBitmapTextureAtlasSource;
 import org.andengine.opengl.texture.atlas.buildable.builder.BlackPawnTextureAtlasBuilder;
 import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder;
+import org.andengine.opengl.texture.bitmap.BitmapTexture;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegionFactory;
 import org.andengine.ui.activity.BaseGameActivity;
+import org.andengine.util.adt.io.in.IInputStreamOpener;
 import org.andengine.util.debug.Debug;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +38,23 @@ public class TextureUtility {
     public static final int BUTTON_STATE_UP = 0;
     public static final int BUTTON_STATE_DOWN = 1;
     public static final int BUTTON_STATE_DISABLED = 2;
+
+    public static ITextureRegion loadLogo(final BaseGameActivity baseGameActivity) {
+        try {
+            ITexture logoTexture = new BitmapTexture(baseGameActivity.getTextureManager(), new IInputStreamOpener() {
+                @Override
+                public InputStream open() throws IOException {
+                    return baseGameActivity.getAssets().open("gfx/logo/logo-128.png");
+                }
+            });
+
+            logoTexture.load();
+            return TextureRegionFactory.extractFromTexture(logoTexture);
+        } catch (IOException e) {
+            Debug.e(e);
+            return null;
+        }
+    }
 
     public static ITextureRegion loadBackground(final BaseGameActivity baseGameActivity,
                                                 final int width, final int height) {
