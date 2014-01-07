@@ -3,7 +3,7 @@
  * Zachary Evans
  * CS7020 - Term Project
  */
-package android.otasyn.cardgames.activity;
+package android.otasyn.cardgames.activity.game.demo;
 
 import android.os.Bundle;
 import android.app.Activity;

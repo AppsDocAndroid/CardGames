@@ -30,22 +30,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.FirebaseActivity"
+            android:name=".activity.game.demo.FirebaseActivity"
             android:label="@string/titleActivityGame" >
         </activity>
         <activity android:name=".activity.LoginActivity"/>
         <activity android:name=".activity.RegisterActivity"/>
         <activity android:name=".activity.FriendsListActivity"/>
         <activity android:name=".activity.GamesListActivity"/>
-        <activity android:name=".activity.AndEngineActivity"/>
-        <activity android:name=".activity.Cards46x64Activity"/>
-        <activity android:name=".activity.Cards92x128Activity"/>
-        <activity android:name=".activity.Cards184x256Activity"/>
-        <activity android:name=".activity.CardsFullSizeActivity"/>
+        <activity android:name=".activity.game.demo.AndEngineActivity"/>
+        <activity android:name=".activity.game.demo.Cards46x64Activity"/>
+        <activity android:name=".activity.game.demo.Cards92x128Activity"/>
+        <activity android:name=".activity.game.demo.Cards184x256Activity"/>
+        <activity android:name=".activity.game.demo.CardsFullSizeActivity"/>
         <activity android:name=".activity.DemosActivity"/>
-        <activity android:name=".activity.BlackjackGameActivity"/>
-        <activity android:name=".activity.FivesGameActivity"/>
-        <activity android:name=".activity.FreestyleGameActivity"/>
+        <activity android:name=".activity.game.BlackjackGameActivity"/>
+        <activity android:name=".activity.game.FivesGameActivity"/>
+        <activity android:name=".activity.game.FreestyleGameActivity"/>
     </application>
 
 </manifest>

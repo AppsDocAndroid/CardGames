@@ -1,4 +1,4 @@
-package android.otasyn.cardgames.activity;
+package android.otasyn.cardgames.activity.game;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;

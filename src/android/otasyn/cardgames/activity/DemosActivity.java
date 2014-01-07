@@ -5,6 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.otasyn.cardgames.R;
+import android.otasyn.cardgames.activity.game.demo.AndEngineActivity;
+import android.otasyn.cardgames.activity.game.demo.Cards184x256Activity;
+import android.otasyn.cardgames.activity.game.demo.Cards46x64Activity;
+import android.otasyn.cardgames.activity.game.demo.Cards92x128Activity;
+import android.otasyn.cardgames.activity.game.demo.CardsFullSizeActivity;
+import android.otasyn.cardgames.activity.game.demo.FirebaseActivity;
 import android.view.View;
 import android.widget.Button;
 

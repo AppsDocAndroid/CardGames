@@ -1,4 +1,9 @@
-package android.otasyn.cardgames.activity;
+/**
+ * Patrick John Haskins
+ * Zachary Evans
+ * CS7020 - Term Project
+ */
+package android.otasyn.cardgames.activity.game;
 
 import android.graphics.Typeface;
 import android.otasyn.cardgames.entity.PositionBox;

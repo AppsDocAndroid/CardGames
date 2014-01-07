@@ -1,4 +1,4 @@
-package android.otasyn.cardgames.activity;
+package android.otasyn.cardgames.activity.game;
 
 import android.otasyn.cardgames.scene.CardGameScene;
 

@@ -3,17 +3,16 @@
  * Zachary Evans
  * CS7020 - Term Project
  */
-package android.otasyn.cardgames.activity;
+package android.otasyn.cardgames.activity.game.demo;
 
-import android.otasyn.cardgames.activity.CardGameActivity;
 import android.otasyn.cardgames.scene.CardGameScene;
 import android.otasyn.cardgames.utility.TextureUtility;
 
-public class CardsFullSizeActivity extends CardGameActivity {
+public class Cards184x256Activity extends CardDemoActivity {
 
     @Override
     protected void onCreateCardGameResources() {
-        setCardTextureRegions(TextureUtility.loadCardsFullSize(this));
+        setCardTextureRegions(TextureUtility.loadCards184x256(this));
     }
 
     @Override
