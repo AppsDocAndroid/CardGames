@@ -10,13 +10,21 @@ import android.otasyn.cardgames.entity.PositionBox;
 import android.otasyn.cardgames.scene.CardGameScene;
 import android.otasyn.cardgames.utility.TextureUtility;
 import org.andengine.engine.options.ScreenOrientation;
+import org.andengine.entity.primitive.Rectangle;
+import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
+import org.andengine.util.color.Color;
+import org.andengine.util.debug.Debug;
 
 public class BlackjackGameActivity extends CardGameActivity {
 
     private final static float POSITION_BOX_WIDTH = 125;
     private final static float POSITION_BOX_HEIGHT = 200;
+
+    private final static float DECK_PADDING = 15;
+
+    private ButtonSprite deckButton;
 
     private Font boldFont;
 
@@ -40,6 +48,7 @@ public class BlackjackGameActivity extends CardGameActivity {
     protected void onCreateCardGameScene(final CardGameScene scene) {
         createAndDrawPositionBoxes(scene);
 
+        displayAll();
     }
 
     private void createAndDrawPositionBoxes(final CardGameScene scene) {
@@ -71,5 +80,64 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     private PositionBox createPositionBox(final float x, final float y, final float angle) {
         return new PositionBox(x, y, POSITION_BOX_WIDTH, POSITION_BOX_HEIGHT, angle, getVertexBufferObjectManager());
+    }
+
+    private void displayAll() {
+        displayDeck();
+    }
+
+    private void displayDeck() {
+        if (deckButton == null) {
+            if (getRedBack() != null) {
+                float deckX = (getCameraWidth() / 2f) - 200f;
+                float deckY = 25f;
+
+                Rectangle deckPositionBox = new Rectangle(deckX - DECK_PADDING, deckY - DECK_PADDING,
+                                                          getRedBack().getWidth() + (2 * DECK_PADDING),
+                                                          getRedBack().getHeight() + (2 * DECK_PADDING),
+                                                          getVertexBufferObjectManager());
+                deckPositionBox.setColor(Color.BLACK);
+                getCardGameScene().attachChild(deckPositionBox);
+
+                deckButton = new ButtonSprite(
+                        deckX, deckY,
+                        getRedBack(),
+                        this.getVertexBufferObjectManager());
+                deckButton.setOnClickListener(new DeckClickListener());
+                getCardGameScene().attachChild(deckButton);
+                getCardGameScene().registerTouchArea(deckButton);
+            }
+        }
+        if (deckButton != null) {
+            if (getLatestAction() != null
+                    && getLatestAction().getGameState() != null
+                    && getLatestAction().getGameState().getDeck() != null
+                    && getLatestAction().getGameState().getDeck().size() > 0) {
+                Debug.d("CardGames", "Deck is visible.");
+                deckButton.setVisible(true);
+            } else {
+                Debug.d("CardGames", "Deck is not visible.");
+                deckButton.setVisible(false);
+            }
+        }
+    }
+
+    // Listeners
+
+    private class DeckClickListener implements ButtonSprite.OnClickListener {
+        @Override
+        public void onClick(final ButtonSprite deckButton,
+                            final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            BlackjackGameActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Debug.d("CardGames", "Deck clicked.");
+                    if (isCurrentUserTurn()) {
+
+                        // TODO handle deck click
+                    }
+                }
+            });
+        }
     }
 }

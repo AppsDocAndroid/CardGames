@@ -10,6 +10,7 @@ import android.otasyn.cardgames.communication.dto.Game;
 import android.otasyn.cardgames.communication.dto.GameAction;
 import android.otasyn.cardgames.communication.dto.GamePlayer;
 import android.otasyn.cardgames.communication.dto.SimpleUser;
+import android.otasyn.cardgames.communication.dto.gamestate.BlackjackState;
 import android.otasyn.cardgames.communication.dto.gamestate.FivesState;
 import android.otasyn.cardgames.communication.dto.gamestate.FreestyleState;
 import android.otasyn.cardgames.communication.dto.gamestate.GameState;
@@ -264,13 +265,33 @@ public class JsonResponseParserUtility {
             return null;
         }
         switch (game.getGameType()) {
-            case FREESTYLE:
-                return parseFreestyleState(jsonGameState, game);
+            case BLACKJACK:
+                return parseBlackjackState(jsonGameState, game);
             case FIVES:
                 return parseFivesState(jsonGameState, game);
+            case FREESTYLE:
+                return parseFreestyleState(jsonGameState, game);
             default:
                 return null;
         }
+    }
+
+    private static BlackjackState parseBlackjackState(final JSONObject jsonBlackjackState, final Game game) {
+        if (jsonBlackjackState == null) {
+            return null;
+        }
+        BlackjackState blackjackState = new BlackjackState();
+        populateGameState(blackjackState, jsonBlackjackState, game);
+        return blackjackState;
+    }
+
+    private static FivesState parseFivesState(final JSONObject jsonFivesState, final Game game) {
+        if (jsonFivesState == null) {
+            return null;
+        }
+        FivesState fivesState = new FivesState();
+        populateGameState(fivesState, jsonFivesState, game);
+        return fivesState;
     }
 
     private static FreestyleState parseFreestyleState(final JSONObject jsonFreestyleState, final Game game) {
@@ -283,15 +304,6 @@ public class JsonResponseParserUtility {
             populateBoard(freestyleState, jsonFreestyleState.optJSONObject("board"));
         }
         return freestyleState;
-    }
-
-    private static FivesState parseFivesState(final JSONObject jsonFivesState, final Game game) {
-        if (jsonFivesState == null) {
-            return null;
-        }
-        FivesState fivesState = new FivesState();
-        populateGameState(fivesState, jsonFivesState, game);
-        return fivesState;
     }
 
     private static void populateGameState(final GameState gameState, final JSONObject jsonGameState,
