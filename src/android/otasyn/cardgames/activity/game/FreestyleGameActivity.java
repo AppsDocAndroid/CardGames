@@ -4,8 +4,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.otasyn.cardgames.R;
-import android.otasyn.cardgames.communication.asynctask.MoveTask;
-import android.otasyn.cardgames.communication.asynctask.TurnTask;
+import android.otasyn.cardgames.communication.asynctask.games.freestyle.FreestyleMoveTask;
+import android.otasyn.cardgames.communication.asynctask.games.freestyle.FreestyleTurnTask;
 import android.otasyn.cardgames.communication.dto.GameAction;
 import android.otasyn.cardgames.communication.dto.GamePlayer;
 import android.otasyn.cardgames.communication.dto.gamestate.FreestyleState;
@@ -434,7 +434,7 @@ public class FreestyleGameActivity extends CardGameActivity {
 
     private void move() {
         try {
-            setLatestAction((new MoveTask()).execute(
+            setLatestAction((new FreestyleMoveTask()).execute(
                     getGame().getId().toString(),
                     JsonStringFormatterUtility.formatFreestyleState((FreestyleState) getLatestAction().getGameState()))
                     .get());
@@ -445,7 +445,7 @@ public class FreestyleGameActivity extends CardGameActivity {
     private void turn() {
         invertBoard();
         try {
-            setLatestAction((new TurnTask()).execute(
+            setLatestAction((new FreestyleTurnTask()).execute(
                     getGame().getId().toString(),
                     JsonStringFormatterUtility.formatFreestyleState((FreestyleState) getLatestAction().getGameState()))
                     .get());
