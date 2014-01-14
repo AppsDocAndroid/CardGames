@@ -6,6 +6,7 @@
 package android.otasyn.cardgames.activity.game;
 
 import android.graphics.Typeface;
+import android.otasyn.cardgames.communication.dto.GameAction;
 import android.otasyn.cardgames.entity.PositionBox;
 import android.otasyn.cardgames.scene.CardGameScene;
 import android.otasyn.cardgames.utility.TextureUtility;
@@ -80,6 +81,14 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     private PositionBox createPositionBox(final float x, final float y, final float angle) {
         return new PositionBox(x, y, POSITION_BOX_WIDTH, POSITION_BOX_HEIGHT, angle, getVertexBufferObjectManager());
+    }
+
+    @Override
+    protected void onLatestActionUpdated(final GameAction latestAction) {
+        if (isGameLoaded() && isGameRunning()) {
+            Debug.d("CardGames", "onLatestActionUpdated");
+            displayAll();
+        }
     }
 
     private void displayAll() {

@@ -14,7 +14,12 @@ import android.otasyn.cardgames.communication.dto.gamestate.BlackjackState;
 import android.otasyn.cardgames.communication.dto.gamestate.FivesState;
 import android.otasyn.cardgames.communication.dto.gamestate.FreestyleState;
 import android.otasyn.cardgames.communication.dto.gamestate.GameState;
+import android.otasyn.cardgames.communication.dto.gamestate.blackjack.DealerHand;
+import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHand;
+import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHands;
 import android.otasyn.cardgames.communication.dto.gamestate.freestyle.BoardCard;
+import android.otasyn.cardgames.communication.dto.moves.BlackjackMovesAvailable;
+import android.otasyn.cardgames.communication.dto.moves.MovesAvailable;
 import android.otasyn.cardgames.communication.enumeration.GameType;
 import android.otasyn.cardgames.utility.DateUtility;
 import android.otasyn.cardgames.utility.enumeration.Card;
@@ -250,6 +255,11 @@ public class JsonResponseParserUtility {
         if (jsonGameAction.has("gameState") && !jsonGameAction.isNull("gameState") && gameAction.getGame() != null) {
             gameAction.setGameState(parseGameState(jsonGameAction.optJSONObject("gameState"), gameAction.getGame()));
         }
+        if (jsonGameAction.has("movesAvailable") && !jsonGameAction.isNull("movesAvailable")
+                && gameAction.getGame() != null) {
+            gameAction.setMovesAvailable(
+                    parseMovesAvailable(jsonGameAction.optJSONObject("movesAvailable"), gameAction.getGame()));
+        }
         if (jsonGameAction.has("actionDate") && !jsonGameAction.isNull("actionDate")) {
             try {
                 gameAction.setActionDate(formatter.parse(jsonGameAction.optString("actionDate")));
@@ -282,6 +292,25 @@ public class JsonResponseParserUtility {
         }
         BlackjackState blackjackState = new BlackjackState();
         populateGameState(blackjackState, jsonBlackjackState, game);
+        if (jsonBlackjackState.has("dealerHand") && !jsonBlackjackState.isNull("dealerHand")) {
+            populateDealerHand(blackjackState, jsonBlackjackState.optJSONObject("dealerHand"));
+        }
+        if (jsonBlackjackState.has("playersHands") && !jsonBlackjackState.isNull("playersHands") && game != null) {
+            populatePlayersHands(blackjackState, jsonBlackjackState.optJSONObject("playersHands"), game);
+        }
+        if (jsonBlackjackState.has("playersBanks") && !jsonBlackjackState.isNull("playersBanks") && game != null) {
+            populatePlayersBanks(blackjackState, jsonBlackjackState.optJSONObject("playersBanks"), game);
+        }
+        if (jsonBlackjackState.has("playersReadyForNext") && !jsonBlackjackState.isNull("playersReadyForNext")
+                && game != null) {
+            populatePlayersReadyForNext(blackjackState, jsonBlackjackState.optJSONObject("playersReadyForNext"), game);
+        }
+        if (jsonBlackjackState.has("handFinished") && !jsonBlackjackState.isNull("handFinished")) {
+            blackjackState.setHandFinished(jsonBlackjackState.optBoolean("handFinished"));
+        }
+        if (jsonBlackjackState.has("discardPile") && !jsonBlackjackState.isNull("discardPile")) {
+            populateDiscardPile(blackjackState, jsonBlackjackState.optJSONArray("discardPile"));
+        }
         return blackjackState;
     }
 
@@ -323,6 +352,129 @@ public class JsonResponseParserUtility {
                 deck.add(Card.findCard(jsonDeck.optInt(n, -1)));
             }
             gameState.setDeck(deck);
+        }
+    }
+
+    private static void populateDealerHand(final BlackjackState gameState, final JSONObject jsonDealerHand) {
+        if (jsonDealerHand != null) {
+            DealerHand dealerHand = new DealerHand();
+            if (jsonDealerHand.has("faceDownCard") && !jsonDealerHand.isNull("faceDownCard")) {
+                dealerHand.setFaceDownCard(Card.findCard(jsonDealerHand.optInt("faceDownCard", -1)));
+            }
+            if (jsonDealerHand.has("faceUpCards") && !jsonDealerHand.isNull("faceUpCards")) {
+                populateFaceUpCards(dealerHand, jsonDealerHand.optJSONArray("faceUpCards"));
+            }
+            gameState.setDealerHand(dealerHand);
+        }
+    }
+
+    private static void populateFaceUpCards(final DealerHand dealerHand, final JSONArray jsonFaceUpCards) {
+        if (jsonFaceUpCards != null) {
+            List<Card> faceUpCards = new ArrayList<Card>(jsonFaceUpCards.length());
+            for (int n = 0; n < jsonFaceUpCards.length(); n++) {
+                faceUpCards.add(Card.findCard(jsonFaceUpCards.optInt(n, -1)));
+            }
+            dealerHand.setFaceUpCards(faceUpCards);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void populatePlayersHands(final BlackjackState gameState, final JSONObject jsonPlayersHands,
+                                             final Game game) {
+        if (jsonPlayersHands != null) {
+            Map<GamePlayer, PlayerHands> playersHands = new HashMap<GamePlayer, PlayerHands>(jsonPlayersHands.length());
+            Iterator<String> iterator;
+            for (iterator = jsonPlayersHands.keys(); iterator.hasNext();) {
+                String key = iterator.next();
+                JSONObject jsonPlayerHands = jsonPlayersHands.optJSONObject(key);
+                PlayerHands playerHands = new PlayerHands();
+                if (jsonPlayerHands.has("hands") && !jsonPlayerHands.isNull("hands")) {
+                    populatePlayerHands(playerHands, jsonPlayerHands.optJSONArray("hands"));
+                }
+                if (jsonPlayerHands.has("handTurn") && !jsonPlayerHands.isNull("handTurn")) {
+                    playerHands.setHandTurn(jsonPlayerHands.optInt("handTurn", -1));
+                }
+                if (jsonPlayerHands.has("insurance") && !jsonPlayerHands.isNull("insurance")) {
+                    playerHands.setInsurance(jsonPlayerHands.optInt("insurance", -1));
+                }
+                if (jsonPlayerHands.has("surrendered") && !jsonPlayerHands.isNull("surrendered")) {
+                    playerHands.setSurrendered(jsonPlayerHands.optBoolean("surrendered", false));
+                }
+                playersHands.put(new GamePlayer(Integer.valueOf(key), game), playerHands);
+            }
+            gameState.setPlayersHands(playersHands);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void populatePlayerHands(final PlayerHands playerHands, final JSONArray jsonPlayerHands) {
+        if (jsonPlayerHands != null) {
+            List<PlayerHand> hands = new ArrayList<PlayerHand>(jsonPlayerHands.length());
+            for (int n = 0; n < jsonPlayerHands.length(); n++) {
+                JSONObject jsonPlayerHand = jsonPlayerHands.optJSONObject(n);
+                PlayerHand playerHand = new PlayerHand();
+                if (jsonPlayerHand != null) {
+                    if (jsonPlayerHand.has("hand") && !jsonPlayerHand.isNull("hand")) {
+                        populatePlayerHand(playerHand, jsonPlayerHand.optJSONArray("hand"));
+                    }
+                    if (jsonPlayerHand.has("bet") && !jsonPlayerHand.isNull("bet")) {
+                        playerHand.setBet(jsonPlayerHand.optInt("bet", -1));
+                    }
+                    if (jsonPlayerHand.has("doubleDown") && !jsonPlayerHand.isNull("doubleDown")) {
+                        playerHand.setDoubleDown(jsonPlayerHand.optInt("doubleDown", -1));
+                    }
+                }
+                hands.add(playerHand);
+            }
+            playerHands.setHands(hands);
+        }
+    }
+
+    private static void populatePlayerHand(final PlayerHand playerHand, final JSONArray jsonPlayerHand) {
+        if (jsonPlayerHand != null) {
+            List<Card> hand = new ArrayList<Card>(jsonPlayerHand.length());
+            for (int n = 0; n < jsonPlayerHand.length(); n++) {
+                hand.add(Card.findCard(jsonPlayerHand.optInt(n, -1)));
+            }
+            playerHand.setHand(hand);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void populatePlayersBanks(final BlackjackState gameState, final JSONObject jsonPlayersBanks,
+                                             final Game game) {
+        if (jsonPlayersBanks != null) {
+            Map<GamePlayer, Integer> playersBanks = new HashMap<GamePlayer, Integer>(jsonPlayersBanks.length());
+            Iterator<String> iterator;
+            for (iterator = jsonPlayersBanks.keys(); iterator.hasNext();) {
+                String key = iterator.next();
+                playersBanks.put(new GamePlayer(Integer.valueOf(key), game), jsonPlayersBanks.optInt(key));
+            }
+            gameState.setPlayersBanks(playersBanks);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void populatePlayersReadyForNext(final BlackjackState gameState, final JSONObject jsonPlayersReady,
+                                                    final Game game) {
+        if (jsonPlayersReady != null) {
+            Map<GamePlayer, Boolean> playersReadyForNext = new HashMap<GamePlayer, Boolean>(jsonPlayersReady.length());
+            Iterator<String> iterator;
+            for (iterator = jsonPlayersReady.keys(); iterator.hasNext();) {
+                String key = iterator.next();
+                playersReadyForNext.put(new GamePlayer(Integer.valueOf(key), game), jsonPlayersReady.optBoolean(key));
+            }
+            gameState.setPlayersReadyForNext(playersReadyForNext);
+        }
+    }
+
+    private static void populateDiscardPile(final BlackjackState gameState, final JSONArray jsonDiscardPile) {
+        if (jsonDiscardPile != null) {
+            LinkedList<Card> discardPile = new LinkedList<Card>();
+            for (int n = 0; n < jsonDiscardPile.length(); n++) {
+                discardPile.add(Card.findCard(jsonDiscardPile.optInt(n, -1)));
+            }
+            gameState.setDiscardPile(discardPile);
         }
     }
 
@@ -368,6 +520,50 @@ public class JsonResponseParserUtility {
             }
             freestyleState.setBoard(board);
         }
+    }
+
+    private static MovesAvailable parseMovesAvailable(final JSONObject jsonMovesAvailable, final Game game) {
+        if (jsonMovesAvailable == null || game == null) {
+            return null;
+        }
+        switch (game.getGameType()) {
+            case BLACKJACK:
+                return parseBlackjackMovesAvailable(jsonMovesAvailable);
+            default:
+                return null;
+        }
+    }
+
+    private static BlackjackMovesAvailable parseBlackjackMovesAvailable(final JSONObject jsonMovesAvailable) {
+        if (jsonMovesAvailable == null) {
+            return null;
+        }
+        BlackjackMovesAvailable blackjackMovesAvailable = new BlackjackMovesAvailable();
+        if (jsonMovesAvailable.has("ready") && !jsonMovesAvailable.isNull("ready")) {
+            blackjackMovesAvailable.setReady(jsonMovesAvailable.optBoolean("ready"));
+        }
+        if (jsonMovesAvailable.has("bet") && !jsonMovesAvailable.isNull("bet")) {
+            blackjackMovesAvailable.setBet(jsonMovesAvailable.optBoolean("bet"));
+        }
+        if (jsonMovesAvailable.has("insurance") && !jsonMovesAvailable.isNull("insurance")) {
+            blackjackMovesAvailable.setInsurance(jsonMovesAvailable.optBoolean("insurance"));
+        }
+        if (jsonMovesAvailable.has("surrender") && !jsonMovesAvailable.isNull("surrender")) {
+            blackjackMovesAvailable.setSurrender(jsonMovesAvailable.optBoolean("surrender"));
+        }
+        if (jsonMovesAvailable.has("hit") && !jsonMovesAvailable.isNull("hit")) {
+            blackjackMovesAvailable.setHit(jsonMovesAvailable.optBoolean("hit"));
+        }
+        if (jsonMovesAvailable.has("stand") && !jsonMovesAvailable.isNull("stand")) {
+            blackjackMovesAvailable.setStand(jsonMovesAvailable.optBoolean("stand"));
+        }
+        if (jsonMovesAvailable.has("doubleDown") && !jsonMovesAvailable.isNull("doubleDown")) {
+            blackjackMovesAvailable.setDoubleDown(jsonMovesAvailable.optBoolean("doubleDown"));
+        }
+        if (jsonMovesAvailable.has("split") && !jsonMovesAvailable.isNull("split")) {
+            blackjackMovesAvailable.setSplit(jsonMovesAvailable.optBoolean("split"));
+        }
+        return blackjackMovesAvailable;
     }
 
 }

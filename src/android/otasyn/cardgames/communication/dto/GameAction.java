@@ -1,6 +1,7 @@
 package android.otasyn.cardgames.communication.dto;
 
 import android.otasyn.cardgames.communication.dto.gamestate.GameState;
+import android.otasyn.cardgames.communication.dto.moves.MovesAvailable;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -12,6 +13,7 @@ public class GameAction implements Serializable {
     private GamePlayer nextActionPlayer;
     private GameState gameState;
     private Date actionDate;
+    private MovesAvailable movesAvailable;
 
     public Game getGame() {
         return game;
@@ -51,6 +53,14 @@ public class GameAction implements Serializable {
 
     public void setActionDate(final Date actionDate) {
         this.actionDate = actionDate;
+    }
+
+    public MovesAvailable getMovesAvailable() {
+        return movesAvailable;
+    }
+
+    public void setMovesAvailable(final MovesAvailable movesAvailable) {
+        this.movesAvailable = movesAvailable;
     }
 
     @Override

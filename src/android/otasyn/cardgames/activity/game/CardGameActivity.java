@@ -22,6 +22,7 @@ import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
+import org.andengine.util.debug.Debug;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +45,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     private Game game;
     private SimpleUser currentUser;
     private GameAction latestAction;
+    private Timer timer;
     private Handler latestActionHandler;
 
     private ScreenOrientation screenOrientation;
@@ -113,6 +115,12 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        timer.cancel();
+    }
+
+    @Override
     public EngineOptions onCreateEngineOptions() {
         onBeforeCreateEngineOptions();
         if (screenOrientation == null) {
@@ -139,7 +147,8 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
         updateInfo();
 
         latestActionHandler = new LatestActionHandler();
-        new Timer().scheduleAtFixedRate(new LatestActionTimerTask(), 5000, 5000);
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new LatestActionTimerTask(), 5000, 5000);
 
         return new EngineOptions(true, screenOrientation, resolutionPolicy,
                                  new Camera(0, 0, getCameraWidth(), getCameraHeight()));
@@ -154,6 +163,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     }
 
     private void updateLatestAction() {
+        Debug.d("CardGames", "updateLatestAction()");
         GameAction newLatestAction;
         try {
             newLatestAction = (new LatestActionTask()).execute(game).get();
