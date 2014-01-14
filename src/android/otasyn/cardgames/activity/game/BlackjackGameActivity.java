@@ -34,6 +34,7 @@ public class BlackjackGameActivity extends CardGameActivity {
     @Override
     protected void onBeforeCreateEngineOptions() {
         setScreenOrientation(ScreenOrientation.LANDSCAPE_FIXED);
+        setAlsoUpdateOnCurrentUserTurn(true);
     }
 
     @Override

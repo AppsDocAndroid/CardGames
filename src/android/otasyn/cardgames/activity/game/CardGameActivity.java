@@ -47,6 +47,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     private GameAction latestAction;
     private Timer timer;
     private Handler latestActionHandler;
+    private boolean alsoUpdateOnCurrentUserTurn;
 
     private ScreenOrientation screenOrientation;
     private IResolutionPolicy resolutionPolicy;
@@ -112,6 +113,14 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
 
     protected void setResolutionPolicy(final IResolutionPolicy resolutionPolicy) {
         this.resolutionPolicy = resolutionPolicy;
+    }
+
+    public boolean isAlsoUpdateOnCurrentUserTurn() {
+        return alsoUpdateOnCurrentUserTurn;
+    }
+
+    public void setAlsoUpdateOnCurrentUserTurn(final boolean alsoUpdateOnCurrentUserTurn) {
+        this.alsoUpdateOnCurrentUserTurn = alsoUpdateOnCurrentUserTurn;
     }
 
     @Override
@@ -188,7 +197,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     private class LatestActionTimerTask extends TimerTask {
         @Override
         public void run() {
-            if (!isCurrentUserTurn()) {
+            if (isAlsoUpdateOnCurrentUserTurn() || !isCurrentUserTurn()) {
                 latestActionHandler.sendEmptyMessage(0);
             }
         }
