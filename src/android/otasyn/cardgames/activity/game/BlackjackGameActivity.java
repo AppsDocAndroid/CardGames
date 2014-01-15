@@ -91,9 +91,9 @@ public class BlackjackGameActivity extends CardGameActivity {
         positionBoxes = new PositionBox[getGame().getPlayers().size()];
         for (int n = 0; n < getGame().getPlayers().size(); n++) {
             if (n == 0) {
-                currentAngle -= spacingAngle * ((getGame().getPlayers().size() - 1) / 2d);
+                currentAngle += spacingAngle * ((getGame().getPlayers().size() - 1) / 2d);
             } else {
-                currentAngle += spacingAngle;
+                currentAngle -= spacingAngle;
             }
 
             float pbX = arcCenterX + (arcRadius * (float) Math.sin(currentAngle));
