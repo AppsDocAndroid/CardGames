@@ -177,19 +177,15 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
         GameAction newLatestAction;
         try {
             newLatestAction = (new LatestActionTask()).execute(game).get();
+
+            if (newLatestAction != null
+                    && (this.latestAction == null
+                        || this.latestAction.getActionNumber() != newLatestAction.getActionNumber())) {
+                this.latestAction = newLatestAction;
+                onLatestActionUpdated(this.latestAction);
+            }
         } catch (Exception e) {
-            newLatestAction = null;
-        }
-
-        if (newLatestAction == null) {
-            newLatestAction = new GameAction();
-            newLatestAction.setGame(game);
-            newLatestAction.setActionNumber(-1);
-        }
-
-        if (this.latestAction == null || this.latestAction.getActionNumber() != newLatestAction.getActionNumber()) {
-            this.latestAction = newLatestAction;
-            onLatestActionUpdated(this.latestAction);
+            Debug.d("CardGames", "updateLatestAction() failed.", e);
         }
     }
 

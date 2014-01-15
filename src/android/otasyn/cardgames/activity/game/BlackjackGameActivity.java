@@ -11,6 +11,7 @@ import android.otasyn.cardgames.communication.dto.GamePlayer;
 import android.otasyn.cardgames.communication.dto.gamestate.BlackjackState;
 import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHand;
 import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHands;
+import android.otasyn.cardgames.entity.HandHighlight;
 import android.otasyn.cardgames.entity.PositionBox;
 import android.otasyn.cardgames.scene.CardGameScene;
 import android.otasyn.cardgames.sprite.CardSprite;
@@ -52,8 +53,13 @@ public class BlackjackGameActivity extends CardGameActivity {
     private Font betFont;
 
     private Text deckSizeText;
-    private Text[] bankTexts;
-    private List<Text> betTexts = new ArrayList<Text>();
+    private Text[] playerTexts;
+    private HandHighlight handHighlight;
+    private List<Text> betTexts;
+
+    private Color bankColor;
+    private Color handHighlightColor;
+    private Color betColor;
 
     private PositionBox[] positionBoxes;
 
@@ -67,6 +73,10 @@ public class BlackjackGameActivity extends CardGameActivity {
     protected void onCreateCardGameResources() {
         setCardTextureRegions(TextureUtility.loadCards92x128(this));
 
+        handHighlightColor = new Color(88f, 77f, 209f, 0.5f);
+        bankColor = new Color(0, 0, 1, 1);
+        betColor = new Color(0, 0, 1, 1);
+
         boldFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
                 Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32);
         boldFont.load();
@@ -76,11 +86,11 @@ public class BlackjackGameActivity extends CardGameActivity {
         deckSizeFont.load();
 
         bankFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
-                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, Color.RED_ABGR_PACKED_INT);
+                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, bankColor.getARGBPackedInt());
         bankFont.load();
 
         betFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
-                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 24, Color.RED_ABGR_PACKED_INT);
+                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 24, betColor.getARGBPackedInt());
         betFont.load();
     }
 
@@ -93,6 +103,8 @@ public class BlackjackGameActivity extends CardGameActivity {
         deckWidth = getRedBack().getWidth();
         deckHeight = getRedBack().getHeight();
 
+        betTexts = new ArrayList<Text>();
+
         displayAll();
     }
 
@@ -104,7 +116,7 @@ public class BlackjackGameActivity extends CardGameActivity {
         double currentAngle = 0;
 
         positionBoxes = new PositionBox[getGame().getPlayers().size()];
-        bankTexts = new Text[getGame().getPlayers().size()];
+        playerTexts = new Text[getGame().getPlayers().size()];
         for (int n = 0; n < getGame().getPlayers().size(); n++) {
             if (n == 0) {
                 currentAngle += spacingAngle * ((getGame().getPlayers().size() - 1) / 2d);
@@ -118,9 +130,9 @@ public class BlackjackGameActivity extends CardGameActivity {
             positionBoxes[n] = createPositionBox(pbX, pbY, 0);
             scene.attachChild(positionBoxes[n]);
 
-            bankTexts[n] = new Text(pbX, pbY + POSITION_BOX_HEIGHT + 30, bankFont,
-                    "", 10, new TextOptions(HorizontalAlign.CENTER), getVertexBufferObjectManager());
-            getCardGameScene().attachChild(bankTexts[n]);
+            playerTexts[n] = new Text(pbX, pbY + POSITION_BOX_HEIGHT + 30, bankFont,
+                    "", 100, new TextOptions(HorizontalAlign.CENTER), getVertexBufferObjectManager());
+            getCardGameScene().attachChild(playerTexts[n]);
         }
     }
 
@@ -146,27 +158,37 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     @Override
     protected void afterCardSpritesCleared() {
-        clearBetTexts();
+        clearEntities();
     }
 
-    protected void clearBetTexts() {
+    protected void clearEntities() {
         BlackjackGameActivity.this.runOnUpdateThread(new Runnable() {
             @Override
             public void run() {
+                if (handHighlight != null) {
+                    handHighlight.detachSelf();
+                    handHighlight.dispose();
+                    handHighlight = null;
+                }
+
                 for (Text betText : betTexts) {
                     betText.detachSelf();
                     betText.dispose();
                 }
                 betTexts.clear();
-                afterBetTextsCleared();
+                afterCleared();
             }
         });
     }
 
-    protected void afterBetTextsCleared() {
-        displayDeck();
-        displayDealerHand();
-        displayPlayersHands();
+    protected void afterCleared() {
+        if (getGameState() != null) {
+            displayDeck();
+            displayDealerHand();
+            displayPlayersHands();
+        } else {
+            Debug.d("CardGames", "GameState is null. [afterCleared()]");
+        }
     }
 
     private void displayDeck() {
@@ -210,10 +232,12 @@ public class BlackjackGameActivity extends CardGameActivity {
     }
 
     private void displayPlayersHands() {
-        for (int n = 0; n < getGame().getTurnOrder().size(); n++) {
-            GamePlayer player = getGame().getTurnOrder().get(n);
-            PlayerHands playerHands = getGameState().getPlayersHands().get(player);
-            displayPlayerHands(n, player, playerHands);
+        if (getGameState() != null && getGameState().getPlayersHands().size() == getGame().getTurnOrder().size()) {
+            for (int n = 0; n < getGame().getTurnOrder().size(); n++) {
+                GamePlayer player = getGame().getTurnOrder().get(n);
+                PlayerHands playerHands = getGameState().getPlayersHands().get(player);
+                displayPlayerHands(n, player, playerHands);
+            }
         }
     }
 
@@ -235,24 +259,31 @@ public class BlackjackGameActivity extends CardGameActivity {
         for (int n = 0; n < playerHands.getHands().size(); n+=2) {
             boolean twoColumns = playerHands.getHands().size() > 1;
             if (twoColumns) {
-                displayHand(playerHands.getHands().get(n), boxCenterX + (CARD_SPACING / 2), startY, CARD_SPACING);
-                displayHand(playerHands.getHands().get(n+1), boxCenterX - (cardWidth + (CARD_SPACING / 2)), startY, CARD_SPACING);
+                displayHand(playerHands.getHands().get(n), boxCenterX + (CARD_SPACING / 2), startY, CARD_SPACING,
+                        (getLatestAction().getNextActionPlayer().equals(player) && playerHands.getHandTurn() == n));
+                displayHand(playerHands.getHands().get(n+1), boxCenterX - (cardWidth + (CARD_SPACING / 2)), startY,
+                        CARD_SPACING,
+                        (getLatestAction().getNextActionPlayer().equals(player) && playerHands.getHandTurn() == (n+1)));
             } else {
                 displayHand(playerHands.getHands().get(n),
-                            boxCenterX - ((cardWidth + CARD_SPACING) / 2), startY, CARD_SPACING);
+                        boxCenterX - ((cardWidth + CARD_SPACING) / 2), startY, CARD_SPACING,
+                        (getLatestAction().getNextActionPlayer().equals(player) && playerHands.getHandTurn() == n));
             }
             startY -= cardHeight + 20;
         }
 
-        Text bankText = bankTexts[turnNumber];
-        bankText.setText("$" + getGameState().getPlayersBanks().get(player));
-        bankText.setPosition(boxCenterX - (bankText.getWidth() / 2), bankText.getY());
+        Text playerText = playerTexts[turnNumber];
+        playerText.setText(player.getFirstname() + "\n$" + getGameState().getPlayersBanks().get(player));
+        playerText.setPosition(boxCenterX - (playerText.getWidth() / 2), playerText.getY());
     }
 
-    private void displayHand(PlayerHand playerHand, final float startX, final float startY, final float space) {
+    private void displayHand(final PlayerHand playerHand, final float startX, final float startY, final float space,
+                             final boolean isTurn) {
+        List<CardSprite> handSprites = new ArrayList<CardSprite>(playerHand.getHand().size());
         for (int c = 0; c < playerHand.getHand().size(); c++) {
             Card card = playerHand.getHand().get(c);
             CardSprite cardSprite = getCardSprite(card);
+            handSprites.add(cardSprite);
 
             cardSprite.setX(startX + (c * space));
             cardSprite.setY(startY + (c * space));
@@ -260,6 +291,12 @@ public class BlackjackGameActivity extends CardGameActivity {
             cardSprite.setVisible(true);
             getCardGameScene().moveCardSpriteToFront(cardSprite);
         }
+
+        if (isTurn) {
+            handHighlight = new HandHighlight(handSprites, 6, handHighlightColor, this.getVertexBufferObjectManager());
+            getCardGameScene().attachHandHighlight(handHighlight);
+        }
+
         int totalBet = playerHand.getBet() + playerHand.getDoubleDown();
         Debug.d("CardGames", "Bet[" + startX + "," + startY + "]: $" + totalBet);
         Text betText = new Text(startX, startY, this.betFont,
@@ -273,23 +310,26 @@ public class BlackjackGameActivity extends CardGameActivity {
     private void displayDealerHand() {
         float cardX = deckX + deckWidth + 20;
         float cardY = deckY;
-        if (getGameState().getDealerHand().getFaceDownCard() != null) {
-            CardSprite faceDownCardSprite = getCardSprite(getGameState().getDealerHand().getFaceDownCard());
-            faceDownCardSprite.setX(cardX);
-            faceDownCardSprite.setY(cardY);
-            faceDownCardSprite.showBack();
-            faceDownCardSprite.setVisible(true);
-            getCardGameScene().moveCardSpriteToFront(faceDownCardSprite);
-            cardX += CARD_SPACING;
-        }
-        for (Card card : getGameState().getDealerHand().getFaceUpCards()) {
-            CardSprite faceUpCardSprite = getCardSprite(card);
-            faceUpCardSprite.setX(cardX);
-            faceUpCardSprite.setY(cardY);
-            faceUpCardSprite.showFace();
-            faceUpCardSprite.setVisible(true);
-            getCardGameScene().moveCardSpriteToFront(faceUpCardSprite);
-            cardX += CARD_SPACING;
+
+        if (getGameState() != null && getGameState().getDealerHand() != null) {
+            if (getGameState().getDealerHand().getFaceDownCard() != null) {
+                CardSprite faceDownCardSprite = getCardSprite(getGameState().getDealerHand().getFaceDownCard());
+                faceDownCardSprite.setX(cardX);
+                faceDownCardSprite.setY(cardY);
+                faceDownCardSprite.showBack();
+                faceDownCardSprite.setVisible(true);
+                getCardGameScene().moveCardSpriteToFront(faceDownCardSprite);
+                cardX += CARD_SPACING;
+            }
+            for (Card card : getGameState().getDealerHand().getFaceUpCards()) {
+                CardSprite faceUpCardSprite = getCardSprite(card);
+                faceUpCardSprite.setX(cardX);
+                faceUpCardSprite.setY(cardY);
+                faceUpCardSprite.showFace();
+                faceUpCardSprite.setVisible(true);
+                getCardGameScene().moveCardSpriteToFront(faceUpCardSprite);
+                cardX += CARD_SPACING;
+            }
         }
     }
 }

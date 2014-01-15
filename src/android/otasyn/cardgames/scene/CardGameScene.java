@@ -1,5 +1,6 @@
 package android.otasyn.cardgames.scene;
 
+import android.otasyn.cardgames.entity.HandHighlight;
 import android.otasyn.cardgames.sprite.CardSprite;
 import android.otasyn.cardgames.utility.enumeration.Card;
 import org.andengine.entity.IEntity;
@@ -10,16 +11,14 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.input.touch.TouchEvent;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CardGameScene extends Scene {
 
     private static final int CARDS_ZINDEX_START = 1000;
+    private static final int HAND_HIGHLIGHT_ZINDEX = 500;
 
     private final List<CardSprite> cardSpriteList = new ArrayList<CardSprite>(Card.values().length);
-    private final Map<Card,CardSprite> cardSpriteMap = new HashMap<Card,CardSprite>(Card.values().length);
     private CardSprite touchedCardSprite = null;
 
     @Override
@@ -34,9 +33,13 @@ public class CardGameScene extends Scene {
     public void attachCardSprite(final CardSprite cardSprite) {
         super.attachChild(cardSprite);
         cardSpriteList.add(cardSprite);
-        cardSpriteMap.put(cardSprite.getCard(), cardSprite);
         reindexCardSprites();
         registerTouchArea(cardSprite);
+    }
+
+    public void attachHandHighlight(final HandHighlight handHighlight) {
+        super.attachChild(handHighlight);
+        handHighlight.setZIndex(HAND_HIGHLIGHT_ZINDEX);
     }
 
     @Override
@@ -100,7 +103,6 @@ public class CardGameScene extends Scene {
     public boolean detachCardSprite(final CardSprite cardSprite, final boolean doReindex) {
         boolean result = super.detachChild(cardSprite);
         while (cardSpriteList.remove(cardSprite)) {}
-        cardSpriteMap.remove(cardSprite.getCard());
         if (doReindex) {
             reindexCardSprites();
         }
@@ -174,9 +176,5 @@ public class CardGameScene extends Scene {
             return result;
         }
         return super.onSceneTouchEvent(pSceneTouchEvent);
-    }
-
-    public CardSprite getCardSprite(final Card card) {
-        return cardSpriteMap.get(card);
     }
 }
