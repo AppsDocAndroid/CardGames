@@ -24,7 +24,8 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -55,7 +56,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     private ITextureRegion backgroundTextureRegion;
     private ITextureRegion[] gameMenuButtonRegion;
     private Map<Card,ITextureRegion> cardTextureRegions;
-    private Map<Card,CardSprite> cardSpritesMap = new HashMap<Card, CardSprite>();
+    private List<CardSprite> cardSprites = new ArrayList<CardSprite>();
     private ITextureRegion redBack;
 
     private ButtonSprite gameMenuButton;
@@ -267,17 +268,20 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
 
     protected abstract void onCreateCardGameScene(final CardGameScene scene);
 
-    public CardSprite getCardSprite(final Card card) {
-        CardSprite cardSprite = cardSpritesMap.get(card);
-        if (cardSprite == null) {
-            cardSprite = new CardSprite(card, 0, 0, getCardTextureRegions().get(card), redBack, getVertexBufferObjectManager());
-            cardSpritesMap.put(card, cardSprite);
-
-            getCardGameScene().attachCardSprite(cardSprite);
-            cardSprite.setVisible(false);
-
-            cardSprite.showBack();
+    public void clearCardSprites() {
+        for (CardSprite cardSprite : cardSprites) {
+            cardSprite.detachSelf();
+            cardSprite.dispose();
         }
+        cardSprites.clear();
+    }
+
+    public CardSprite getCardSprite(final Card card) {
+        CardSprite cardSprite = new CardSprite(card, 0, 0, getCardTextureRegions().get(card).deepCopy(), redBack, getVertexBufferObjectManager());
+        cardSprites.add(cardSprite);
+        getCardGameScene().attachCardSprite(cardSprite);
+        cardSprite.setVisible(false);
+        cardSprite.showBack();
         return cardSprite;
     }
 

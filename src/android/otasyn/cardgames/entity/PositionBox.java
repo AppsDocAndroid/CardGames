@@ -99,4 +99,20 @@ public class PositionBox extends Entity {
         left.setColor(color);
         this.attachChild(left);
     }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public float getHeight() {
+        return height;
+    }
 }

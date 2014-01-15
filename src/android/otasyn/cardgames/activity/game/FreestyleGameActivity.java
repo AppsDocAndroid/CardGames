@@ -313,6 +313,7 @@ public class FreestyleGameActivity extends CardGameActivity {
     }
 
     private void displayAll() {
+        clearCardSprites();
         displayDeck();
         displayHands();
         displayBoard();
