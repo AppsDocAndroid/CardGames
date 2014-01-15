@@ -28,6 +28,5 @@ public class HandHighlight extends Entity {
             highlight.setAlpha(color.getAlpha());
             this.attachChild(highlight);
         }
-        hand.clear();
     }
 }

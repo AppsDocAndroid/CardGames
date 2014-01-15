@@ -296,6 +296,9 @@ public class BlackjackGameActivity extends CardGameActivity {
         if (isTurn) {
             handHighlight = new HandHighlight(handSprites, 6, handHighlightColor, this.getVertexBufferObjectManager());
             getCardGameScene().attachHandHighlight(handHighlight);
+            for (CardSprite cardSprite : handSprites) {
+                getCardGameScene().moveCardSpriteToFront(cardSprite);
+            }
         }
 
         int totalBet = playerHand.getBet() + playerHand.getDoubleDown();
