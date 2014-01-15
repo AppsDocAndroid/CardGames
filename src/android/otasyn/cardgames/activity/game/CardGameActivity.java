@@ -269,12 +269,20 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     protected abstract void onCreateCardGameScene(final CardGameScene scene);
 
     public void clearCardSprites() {
-        for (CardSprite cardSprite : cardSprites) {
-            cardSprite.detachSelf();
-            cardSprite.dispose();
-        }
-        cardSprites.clear();
+        CardGameActivity.this.runOnUpdateThread(new Runnable() {
+            @Override
+            public void run() {
+                for (CardSprite cardSprite : cardSprites) {
+                    cardSprite.detachSelf();
+                    cardSprite.dispose();
+                }
+                cardSprites.clear();
+                afterCardSpritesCleared();
+            }
+        });
     }
+
+    protected void afterCardSpritesCleared() { }
 
     public CardSprite getCardSprite(final Card card) {
         CardSprite cardSprite = new CardSprite(card, 0, 0, getCardTextureRegions().get(card).deepCopy(), redBack, getVertexBufferObjectManager());

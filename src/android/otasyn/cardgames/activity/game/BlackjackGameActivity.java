@@ -83,9 +83,9 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     private void createAndDrawPositionBoxes(final CardGameScene scene) {
         float arcCenterX = getCameraWidth() / 2f;
-        float arcCenterY = -500f;
-        float arcRadius = 850f;
-        double spacingAngle = .082d * Math.PI;
+        float arcCenterY = -1200f;
+        float arcRadius = 1550f;
+        double spacingAngle = .044d * Math.PI;
         double currentAngle = 0;
 
         positionBoxes = new PositionBox[getGame().getPlayers().size()];
@@ -122,6 +122,10 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     private void displayAll() {
         clearCardSprites();
+    }
+
+    @Override
+    protected void afterCardSpritesCleared() {
         displayDeck();
         displayDealerHand();
         displayPlayersHands();
@@ -178,7 +182,6 @@ public class BlackjackGameActivity extends CardGameActivity {
         PositionBox box = positionBoxes[turnNumber];
         float boxCenterX = box.getX();
         float boxTopY = box.getY();
-        float boxWidth = box.getWidth();
         float boxHeight = box.getHeight();
 
         float cardWidth = getRedBack().getWidth();
@@ -193,8 +196,8 @@ public class BlackjackGameActivity extends CardGameActivity {
         for (int n = 0; n < playerHands.getHands().size(); n+=2) {
             boolean twoColumns = playerHands.getHands().size() > 1;
             if (twoColumns) {
-                displayHand(playerHands.getHands().get(n), boxCenterX - (boxWidth / 2), startY, CARD_SPACING);
-                displayHand(playerHands.getHands().get(n+1), boxCenterX, startY, CARD_SPACING);
+                displayHand(playerHands.getHands().get(n), boxCenterX + (CARD_SPACING / 2), startY, CARD_SPACING);
+                displayHand(playerHands.getHands().get(n+1), boxCenterX - (cardWidth + (CARD_SPACING / 2)), startY, CARD_SPACING);
             } else {
                 displayHand(playerHands.getHands().get(n),
                             boxCenterX - ((cardWidth + CARD_SPACING) / 2), startY, CARD_SPACING);
