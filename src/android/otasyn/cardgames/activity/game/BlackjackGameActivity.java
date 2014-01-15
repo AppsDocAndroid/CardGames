@@ -258,16 +258,17 @@ public class BlackjackGameActivity extends CardGameActivity {
         }
         for (int n = 0; n < playerHands.getHands().size(); n+=2) {
             boolean twoColumns = playerHands.getHands().size() > 1;
+            GamePlayer nextActionPlayer = getLatestAction().getNextActionPlayer();
             if (twoColumns) {
                 displayHand(playerHands.getHands().get(n), boxCenterX + (CARD_SPACING / 2), startY, CARD_SPACING,
-                        (getLatestAction().getNextActionPlayer().equals(player) && playerHands.getHandTurn() == n));
+                        (player.equals(nextActionPlayer) && playerHands.getHandTurn() == n));
                 displayHand(playerHands.getHands().get(n+1), boxCenterX - (cardWidth + (CARD_SPACING / 2)), startY,
                         CARD_SPACING,
-                        (getLatestAction().getNextActionPlayer().equals(player) && playerHands.getHandTurn() == (n+1)));
+                        (player.equals(nextActionPlayer) && playerHands.getHandTurn() == (n+1)));
             } else {
                 displayHand(playerHands.getHands().get(n),
                         boxCenterX - ((cardWidth + CARD_SPACING) / 2), startY, CARD_SPACING,
-                        (getLatestAction().getNextActionPlayer().equals(player) && playerHands.getHandTurn() == n));
+                        (player.equals(nextActionPlayer) && playerHands.getHandTurn() == n));
             }
             startY -= cardHeight + 20;
         }

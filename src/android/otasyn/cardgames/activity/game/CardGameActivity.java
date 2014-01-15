@@ -187,6 +187,12 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
         } catch (Exception e) {
             Debug.d("CardGames", "updateLatestAction() failed.", e);
         }
+
+        if (this.latestAction == null) {
+            this.latestAction = new GameAction();
+            this.latestAction.setActionNumber(-1);
+            this.latestAction.setGame(getGame());
+        }
     }
 
     protected void onLatestActionUpdated(final GameAction latestAction) { }
