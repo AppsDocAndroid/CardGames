@@ -7,6 +7,7 @@ package android.otasyn.cardgames.activity.game;
 
 import android.graphics.Typeface;
 import android.otasyn.cardgames.communication.dto.GameAction;
+import android.otasyn.cardgames.communication.dto.GamePlayer;
 import android.otasyn.cardgames.communication.dto.gamestate.BlackjackState;
 import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHand;
 import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHands;
@@ -26,6 +27,8 @@ import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 
 public class BlackjackGameActivity extends CardGameActivity {
@@ -45,8 +48,12 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     private Font boldFont;
     private Font deckSizeFont;
+    private Font bankFont;
+    private Font betFont;
 
     private Text deckSizeText;
+    private Text[] bankTexts;
+    private List<Text> betTexts = new ArrayList<Text>();
 
     private PositionBox[] positionBoxes;
 
@@ -67,6 +74,14 @@ public class BlackjackGameActivity extends CardGameActivity {
         deckSizeFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
                 Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32);
         deckSizeFont.load();
+
+        bankFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
+                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, Color.RED_ABGR_PACKED_INT);
+        bankFont.load();
+
+        betFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
+                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 24, Color.RED_ABGR_PACKED_INT);
+        betFont.load();
     }
 
     @Override
@@ -89,6 +104,7 @@ public class BlackjackGameActivity extends CardGameActivity {
         double currentAngle = 0;
 
         positionBoxes = new PositionBox[getGame().getPlayers().size()];
+        bankTexts = new Text[getGame().getPlayers().size()];
         for (int n = 0; n < getGame().getPlayers().size(); n++) {
             if (n == 0) {
                 currentAngle += spacingAngle * ((getGame().getPlayers().size() - 1) / 2d);
@@ -101,6 +117,10 @@ public class BlackjackGameActivity extends CardGameActivity {
 
             positionBoxes[n] = createPositionBox(pbX, pbY, 0);
             scene.attachChild(positionBoxes[n]);
+
+            bankTexts[n] = new Text(pbX, pbY + POSITION_BOX_HEIGHT + 30, bankFont,
+                    "", 10, new TextOptions(HorizontalAlign.CENTER), getVertexBufferObjectManager());
+            getCardGameScene().attachChild(bankTexts[n]);
         }
     }
 
@@ -126,6 +146,24 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     @Override
     protected void afterCardSpritesCleared() {
+        clearBetTexts();
+    }
+
+    protected void clearBetTexts() {
+        BlackjackGameActivity.this.runOnUpdateThread(new Runnable() {
+            @Override
+            public void run() {
+                for (Text betText : betTexts) {
+                    betText.detachSelf();
+                    betText.dispose();
+                }
+                betTexts.clear();
+                afterBetTextsCleared();
+            }
+        });
+    }
+
+    protected void afterBetTextsCleared() {
         displayDeck();
         displayDealerHand();
         displayPlayersHands();
@@ -173,12 +211,13 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     private void displayPlayersHands() {
         for (int n = 0; n < getGame().getTurnOrder().size(); n++) {
-            PlayerHands playerHands = getGameState().getPlayersHands().get(getGame().getTurnOrder().get(n));
-            displayPlayerHands(n, playerHands);
+            GamePlayer player = getGame().getTurnOrder().get(n);
+            PlayerHands playerHands = getGameState().getPlayersHands().get(player);
+            displayPlayerHands(n, player, playerHands);
         }
     }
 
-    private void displayPlayerHands(final int turnNumber, final PlayerHands playerHands) {
+    private void displayPlayerHands(final int turnNumber, final GamePlayer player, final PlayerHands playerHands) {
         PositionBox box = positionBoxes[turnNumber];
         float boxCenterX = box.getX();
         float boxTopY = box.getY();
@@ -204,6 +243,10 @@ public class BlackjackGameActivity extends CardGameActivity {
             }
             startY -= cardHeight + 20;
         }
+
+        Text bankText = bankTexts[turnNumber];
+        bankText.setText("$" + getGameState().getPlayersBanks().get(player));
+        bankText.setPosition(boxCenterX - (bankText.getWidth() / 2), bankText.getY());
     }
 
     private void displayHand(PlayerHand playerHand, final float startX, final float startY, final float space) {
@@ -217,6 +260,14 @@ public class BlackjackGameActivity extends CardGameActivity {
             cardSprite.setVisible(true);
             getCardGameScene().moveCardSpriteToFront(cardSprite);
         }
+        int totalBet = playerHand.getBet() + playerHand.getDoubleDown();
+        Debug.d("CardGames", "Bet[" + startX + "," + startY + "]: $" + totalBet);
+        Text betText = new Text(startX, startY, this.betFont,
+                "$" + totalBet, 10, new TextOptions(HorizontalAlign.CENTER),
+                getVertexBufferObjectManager());
+        getCardGameScene().attachChild(betText);
+        betText.setPosition(startX, startY - betFont.getLineHeight() - 4);
+        betTexts.add(betText);
     }
 
     private void displayDealerHand() {
