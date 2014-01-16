@@ -4,6 +4,8 @@
     <string name="appName">Card Games</string>
     <string name="actionSettings">Settings</string>
 
+    <string name="createGameSettings">Create Game</string>
+
     <string name="mainLaunchLoginActivityButton">Login</string>
     <string name="mainCurrentUserButton">Current User</string>
     <string name="mainLogoutButton">Logout</string>
@@ -50,6 +52,11 @@
     <string name="blackjackDoubleDownHeader">How much will you bet?</string>
     <string name="blackjackInsuranceHeader">How much will you bet?</string>
 
-    <string name="gameMenuHeader">Game Menu</string><string name="gameMenuEndTurn">End Turn</string>
+    <string name="gameMenuHeader">Game Menu</string>
+    <string name="gameMenuEndTurn">End Turn</string>
+
+    <string name="createGameHeader">Create Game</string>
+    <string name="gameTypeLabel">Game Type:</string>
+    <string name="gameFriendsLabel">Friends:</string>
 
 </resources>

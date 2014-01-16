@@ -25,4 +25,9 @@
     <dimen name="blackjackDoubleDownHeaderMargin">5dip</dimen>
     <dimen name="blackjackInsuranceHeaderMargin">5dip</dimen>
 
+    <dimen name="createGameHeaderTextSize">24dp</dimen>
+    <dimen name="createGameHeaderMargin">5dip</dimen>
+    <dimen name="createGameTextSize">20dp</dimen>
+    <dimen name="createGameMargin">5dip</dimen>
+
 </resources>

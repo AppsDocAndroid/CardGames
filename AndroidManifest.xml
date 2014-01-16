@@ -46,6 +46,7 @@
         <activity android:name=".activity.game.BlackjackGameActivity"/>
         <activity android:name=".activity.game.FivesGameActivity"/>
         <activity android:name=".activity.game.FreestyleGameActivity"/>
+        <activity android:name=".Asdf"/>
     </application>
 
 </manifest>

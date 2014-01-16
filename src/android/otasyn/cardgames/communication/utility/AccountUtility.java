@@ -1,9 +1,7 @@
 package android.otasyn.cardgames.communication.utility;
 
 import android.content.Context;
-import android.otasyn.cardgames.database.DeleteLoginTask;
-import android.otasyn.cardgames.database.LoginInfo;
-import android.otasyn.cardgames.database.SetLoginTask;
+import android.otasyn.cardgames.communication.asynctask.CreateGameTask;
 import android.otasyn.cardgames.communication.asynctask.CurrentUserTask;
 import android.otasyn.cardgames.communication.asynctask.FriendsListTask;
 import android.otasyn.cardgames.communication.asynctask.GamesListTask;
@@ -13,10 +11,15 @@ import android.otasyn.cardgames.communication.asynctask.RegisterTask;
 import android.otasyn.cardgames.communication.dto.Friend;
 import android.otasyn.cardgames.communication.dto.Game;
 import android.otasyn.cardgames.communication.dto.SimpleUser;
+import android.otasyn.cardgames.communication.enumeration.GameType;
+import android.otasyn.cardgames.database.DeleteLoginTask;
+import android.otasyn.cardgames.database.LoginInfo;
+import android.otasyn.cardgames.database.SetLoginTask;
 import org.andengine.util.debug.Debug;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class AccountUtility {
 
@@ -91,6 +94,16 @@ public class AccountUtility {
             Debug.e("Failed to retrieve games list.", e);
         }
         return new ArrayList<Game>(0);
+    }
+
+    public static boolean createGame(final GameType gameType, Set<Friend> players) {
+        try {
+            (new CreateGameTask()).execute(gameType, players);
+            return true;
+        } catch (Exception e) {
+            Debug.d("CardGames", "Failed to create game properly.", e);
+            return false;
+        }
     }
 
 }

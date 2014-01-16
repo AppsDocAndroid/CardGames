@@ -42,4 +42,13 @@ public enum GameType {
         }
         return UNKNOWN;
     }
+
+    public static GameType findGameType(final String name) {
+        for (GameType gt : GameType.values()) {
+            if (gt.getName() != null && gt.getName().equals(name)) {
+                return gt;
+            }
+        }
+        return UNKNOWN;
+    }
 }

@@ -20,15 +20,30 @@ import android.otasyn.cardgames.activity.widget.GameRow;
 import android.otasyn.cardgames.communication.asynctask.AcceptGameTask;
 import android.otasyn.cardgames.communication.asynctask.CurrentUserTask;
 import android.otasyn.cardgames.communication.asynctask.StartGameTask;
+import android.otasyn.cardgames.communication.dto.Friend;
 import android.otasyn.cardgames.communication.dto.Game;
 import android.otasyn.cardgames.communication.dto.GamePlayer;
 import android.otasyn.cardgames.communication.dto.SimpleUser;
+import android.otasyn.cardgames.communication.enumeration.GameType;
 import android.otasyn.cardgames.communication.utility.AccountUtility;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class GamesListActivity extends Activity {
 
@@ -50,6 +65,7 @@ public class GamesListActivity extends Activity {
 
     private final List<Game> games = new ArrayList<Game>();
     private SimpleUser currentUser;
+    private List<Friend> friends;
 
     private LinearLayout gamesListLayout;
 
@@ -61,7 +77,88 @@ public class GamesListActivity extends Activity {
         gamesListLayout = (LinearLayout) findViewById(R.id.gamesListLayout);
 
         currentUser = AccountUtility.currentUser();
+        friends = AccountUtility.retrieveFriendsList();
         gamesList();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.games, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.action_create_game){
+            Log.d("CardGames", "Create Game selected.");
+            GamesListActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    final Map<Friend, CheckBox> friendsCheckboxes = new HashMap<Friend, CheckBox>(friends.size());
+                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(GamesListActivity.this);
+                    LayoutInflater inflater = GamesListActivity.this.getLayoutInflater();
+                    final View dialogView = inflater.inflate(R.layout.popup_create_game, null);
+                    final AlertDialog alertDialog = alertBuilder
+                            .setView(dialogView)
+                            .setCancelable(true)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog, final int which) {
+                                    Spinner gameTypeSpinner = (Spinner) dialogView.findViewById(R.id.gameTypeSpinner);
+                                    String gameTypeName = String.valueOf(gameTypeSpinner.getSelectedItem());
+                                    GameType gameType = GameType.findGameType(gameTypeName);
+
+                                    Set<Friend> selectedFriends = new HashSet<Friend>();
+                                    for (Map.Entry<Friend, CheckBox> entry : friendsCheckboxes.entrySet()) {
+                                        if (entry.getValue() != null && entry.getValue().isChecked()) {
+                                            selectedFriends.add(entry.getKey());
+                                        }
+                                    }
+
+                                    boolean success = AccountUtility.createGame(gameType, selectedFriends);
+                                    if (success) {
+                                        gamesList();
+                                    }
+
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog, final int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .create();
+                    alertDialog.show();
+
+                    Spinner gameTypeSpinner = (Spinner) alertDialog.findViewById(R.id.gameTypeSpinner);
+                    ArrayAdapter<String> gameTypeAdapter = new ArrayAdapter<String>(GamesListActivity.this,
+                            android.R.layout.simple_spinner_item);
+                    for (GameType gameType : GameType.values()) {
+                        if (gameType != GameType.UNKNOWN) {
+                            gameTypeAdapter.add(gameType.getName());
+                        }
+                    }
+                    gameTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    gameTypeSpinner.setAdapter(gameTypeAdapter);
+
+                    if (friends != null) {
+                        LinearLayout gameFriendsLayout = (LinearLayout) alertDialog.findViewById(R.id.gameFriendsLayout);
+                        gameFriendsLayout.removeAllViews();
+                        for (Friend friend : friends) {
+                            CheckBox friendCheckbox = new CheckBox(GamesListActivity.this);
+                            friendCheckbox.setText(friend.getFirstname() + " " + friend.getLastname());
+                            gameFriendsLayout.addView(friendCheckbox);
+                            friendsCheckboxes.put(friend, friendCheckbox);
+                        }
+                    }
+                }
+            });
+            return true;
+        }
+        return false;
     }
 
     private void gamesList() {
