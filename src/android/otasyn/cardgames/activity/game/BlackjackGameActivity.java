@@ -23,6 +23,7 @@ import android.otasyn.cardgames.communication.dto.gamestate.BlackjackState;
 import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHand;
 import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHands;
 import android.otasyn.cardgames.communication.dto.moves.BlackjackMovesAvailable;
+import android.otasyn.cardgames.contants.BlackjackContants;
 import android.otasyn.cardgames.entity.HandHighlight;
 import android.otasyn.cardgames.entity.PositionBox;
 import android.otasyn.cardgames.scene.CardGameScene;
@@ -501,8 +502,8 @@ public class BlackjackGameActivity extends CardGameActivity {
                             .create();
                     dialog.show();
                     NumberPicker numberPicker = (NumberPicker) dialog.findViewById(R.id.betAmount);
-                    numberPicker.setMinValue(10);
-                    numberPicker.setMaxValue(100);
+                    numberPicker.setMinValue(BlackjackContants.MINIMUM_BET);
+                    numberPicker.setMaxValue(getGameState().getPlayersBanks().get(getCurrentPlayer()));
                 }
             });
         }
@@ -536,9 +537,20 @@ public class BlackjackGameActivity extends CardGameActivity {
                             })
                             .create();
                     dialog.show();
+
+                    int bank = getGameState().getPlayersBanks().get(getCurrentPlayer());
+                    int bet = 0;
+                    PlayerHands playerHands = getGameState().getPlayersHands().get(getCurrentPlayer());
+                    if (playerHands != null) {
+                        int handTurn = playerHands.getHandTurn();
+                        if (handTurn < playerHands.getHands().size()) {
+                            bet = playerHands.getHands().get(handTurn).getBet();
+                        }
+                    }
+
                     NumberPicker numberPicker = (NumberPicker) dialog.findViewById(R.id.doubleDownAmount);
-                    numberPicker.setMinValue(10);
-                    numberPicker.setMaxValue(100);
+                    numberPicker.setMinValue(BlackjackContants.MINIMUM_DOUBLE_DOWN);
+                    numberPicker.setMaxValue(Math.min(bank, bet));
                 }
             });
         }
@@ -583,9 +595,20 @@ public class BlackjackGameActivity extends CardGameActivity {
                             })
                             .create();
                     dialog.show();
+
+                    int bank = getGameState().getPlayersBanks().get(getCurrentPlayer());
+                    int bet = 0;
+                    PlayerHands playerHands = getGameState().getPlayersHands().get(getCurrentPlayer());
+                    if (playerHands != null) {
+                        int handTurn = playerHands.getHandTurn();
+                        if (handTurn < playerHands.getHands().size()) {
+                            bet = playerHands.getHands().get(handTurn).getBet();
+                        }
+                    }
+
                     NumberPicker numberPicker = (NumberPicker) dialog.findViewById(R.id.insuranceAmount);
-                    numberPicker.setMinValue(10);
-                    numberPicker.setMaxValue(100);
+                    numberPicker.setMinValue(BlackjackContants.MINIMUM_INSURANCE);
+                    numberPicker.setMaxValue(Math.min(bank, (int) Math.floor(bet / 2)));
                 }
             });
         }

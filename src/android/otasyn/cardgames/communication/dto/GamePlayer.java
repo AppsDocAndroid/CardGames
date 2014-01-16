@@ -24,6 +24,11 @@ public class GamePlayer extends SimpleUser implements Parcelable {
         super(gamePlayer);
     }
 
+    public GamePlayer(final SimpleUser gamePlayer, final Game game) {
+        super(gamePlayer);
+        this.game = game;
+    }
+
     public GamePlayer(final SimpleUser gamePlayer, final Game game, final Boolean accepted) {
         super(gamePlayer);
         this.game = game;

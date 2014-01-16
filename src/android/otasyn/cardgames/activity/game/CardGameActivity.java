@@ -6,6 +6,7 @@ import android.otasyn.cardgames.R;
 import android.otasyn.cardgames.communication.asynctask.LatestActionTask;
 import android.otasyn.cardgames.communication.dto.Game;
 import android.otasyn.cardgames.communication.dto.GameAction;
+import android.otasyn.cardgames.communication.dto.GamePlayer;
 import android.otasyn.cardgames.communication.dto.SimpleUser;
 import android.otasyn.cardgames.scene.CardGameScene;
 import android.otasyn.cardgames.sprite.CardSprite;
@@ -45,6 +46,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
 
     private Game game;
     private SimpleUser currentUser;
+    private GamePlayer currentPlayer;
     private GameAction latestAction;
     private Timer timer;
     private Handler latestActionHandler;
@@ -91,8 +93,8 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
         return currentUser;
     }
 
-    public void setCurrentUser(final SimpleUser currentUser) {
-        this.currentUser = currentUser;
+    public GamePlayer getCurrentPlayer() {
+        return currentPlayer;
     }
 
     public GameAction getLatestAction() {
@@ -169,6 +171,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
     private void updateInfo() {
         game = getIntent().getParcelableExtra(GAME_INFO);
         currentUser = getIntent().getParcelableExtra(CURRENT_USER);
+        currentPlayer = new GamePlayer(currentUser, game);
         updateLatestAction();
     }
 
