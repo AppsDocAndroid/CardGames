@@ -8,6 +8,7 @@ import org.andengine.entity.IEntityMatcher;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.input.touch.TouchEvent;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.List;
 
 public class CardGameScene extends Scene {
 
+    private static final int BUTTONS_ZINDEX_START = 1500;
     private static final int CARDS_ZINDEX_START = 1000;
     private static final int HAND_HIGHLIGHT_ZINDEX = 500;
 
@@ -28,6 +30,12 @@ public class CardGameScene extends Scene {
         } else {
             super.attachChild(pEntity);
         }
+    }
+
+    public void attachButtonSprite(final ButtonSprite buttonSprite) {
+        super.attachChild(buttonSprite);
+        buttonSprite.setZIndex(BUTTONS_ZINDEX_START);
+        registerTouchArea(buttonSprite);
     }
 
     public void attachCardSprite(final CardSprite cardSprite) {

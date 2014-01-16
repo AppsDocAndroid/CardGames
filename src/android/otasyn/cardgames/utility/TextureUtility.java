@@ -650,4 +650,68 @@ public class TextureUtility {
         }
         return null;
     }
+
+    public static ITextureRegion[] loadBlackjackBetButton(final BaseGameActivity baseGameActivity) {
+        return loadBlackjackButton(baseGameActivity, "bet-up.png", "bet-down.png", "bet-disabled.png");
+    }
+
+    public static ITextureRegion[] loadBlackjackDoubleDownButton(final BaseGameActivity baseGameActivity) {
+        return loadBlackjackButton(baseGameActivity,
+                "doubledown-up.png", "doubledown-down.png", "doubledown-disabled.png");
+    }
+
+    public static ITextureRegion[] loadBlackjackHitButton(final BaseGameActivity baseGameActivity) {
+        return loadBlackjackButton(baseGameActivity, "hit-up.png", "hit-down.png", "hit-disabled.png");
+    }
+
+    public static ITextureRegion[] loadBlackjackInsuranceButton(final BaseGameActivity baseGameActivity) {
+        return loadBlackjackButton(baseGameActivity,
+               "insurance-up.png", "insurance-down.png", "insurance-disabled.png");
+    }
+
+    public static ITextureRegion[] loadBlackjackReadyButton(final BaseGameActivity baseGameActivity) {
+        return loadBlackjackButton(baseGameActivity, "ready-up.png", "ready-down.png", "ready-disabled.png");
+    }
+
+    public static ITextureRegion[] loadBlackjackSplitButton(final BaseGameActivity baseGameActivity) {
+        return loadBlackjackButton(baseGameActivity, "split-up.png", "split-down.png", "split-disabled.png");
+    }
+
+    public static ITextureRegion[] loadBlackjackStandButton(final BaseGameActivity baseGameActivity) {
+        return loadBlackjackButton(baseGameActivity, "stand-up.png", "stand-down.png", "stand-disabled.png");
+    }
+
+    public static ITextureRegion[] loadBlackjackSurrenderButton(final BaseGameActivity baseGameActivity) {
+        return loadBlackjackButton(baseGameActivity,
+                "surrender-up.png", "surrender-down.png", "surrender-disabled.png");
+    }
+
+    private static ITextureRegion[] loadBlackjackButton(final BaseGameActivity baseGameActivity,
+                                                        final String up, final String down, final String disabled) {
+        BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/buttons/blackjack/");
+        // Width and height have to be powers of 2 or this won't work.
+        BuildableBitmapTextureAtlas buttonTextureAtlas = new BuildableBitmapTextureAtlas(
+                baseGameActivity.getTextureManager(), 1024, 1024, TextureOptions.NEAREST);
+
+        ITextureRegion upButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+                buttonTextureAtlas, baseGameActivity, up);
+        ITextureRegion downButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+                buttonTextureAtlas, baseGameActivity, down);
+        ITextureRegion disabledButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+                buttonTextureAtlas, baseGameActivity, disabled);
+
+        try {
+            buttonTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 1));
+            buttonTextureAtlas.load();
+
+            ITextureRegion[] textureRegions = new ITextureRegion[3];
+            textureRegions[BUTTON_STATE_UP] = upButtonRegion;
+            textureRegions[BUTTON_STATE_DOWN] = downButtonRegion;
+            textureRegions[BUTTON_STATE_DISABLED] = disabledButtonRegion;
+            return textureRegions;
+        } catch (ITextureAtlasBuilder.TextureAtlasBuilderException e) {
+            Debug.e(e);
+        }
+        return null;
+    }
 }

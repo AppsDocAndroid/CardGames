@@ -241,6 +241,10 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
         return cardGameScene;
     }
 
+    protected void setGameMenuButtonVisibility(final boolean visible) {
+        this.gameMenuButton.setVisible(visible);
+    }
+
     @Override
     final protected Scene onCreateScene() {
         cardGameScene = new CardGameScene();

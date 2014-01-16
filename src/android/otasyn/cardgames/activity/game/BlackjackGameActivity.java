@@ -11,6 +11,7 @@ import android.otasyn.cardgames.communication.dto.GamePlayer;
 import android.otasyn.cardgames.communication.dto.gamestate.BlackjackState;
 import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHand;
 import android.otasyn.cardgames.communication.dto.gamestate.blackjack.PlayerHands;
+import android.otasyn.cardgames.communication.dto.moves.BlackjackMovesAvailable;
 import android.otasyn.cardgames.entity.HandHighlight;
 import android.otasyn.cardgames.entity.PositionBox;
 import android.otasyn.cardgames.scene.CardGameScene;
@@ -19,11 +20,13 @@ import android.otasyn.cardgames.utility.TextureUtility;
 import android.otasyn.cardgames.utility.enumeration.Card;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.entity.primitive.Rectangle;
+import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
+import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
@@ -39,7 +42,8 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     private final static float DECK_PADDING = 15;
 
-    private final float CARD_SPACING = 12;
+    private final static float CARD_SPACING = 12;
+    private final static float BUTTON_SPACING = 6;
 
     private Sprite deckSprite;
     private float deckX;
@@ -47,21 +51,40 @@ public class BlackjackGameActivity extends CardGameActivity {
     private float deckWidth;
     private float deckHeight;
 
-    private Font boldFont;
     private Font deckSizeFont;
-    private Font bankFont;
+    private Font insuranceFont;
+    private Font playerFont;
     private Font betFont;
 
     private Text deckSizeText;
+    private Text[] insuranceTexts;
     private Text[] playerTexts;
     private HandHighlight handHighlight;
     private List<Text> betTexts;
 
-    private Color bankColor;
+    private Color insuranceColor;
+    private Color playerColor;
     private Color handHighlightColor;
     private Color betColor;
 
     private PositionBox[] positionBoxes;
+    private ITextureRegion[] betButtonTextureRegions;
+    private ITextureRegion[] doubleDownButtonTextureRegions;
+    private ITextureRegion[] hitButtonTextureRegions;
+    private ITextureRegion[] insuranceButtonTextureRegions;
+    private ITextureRegion[] readyButtonTextureRegions;
+    private ITextureRegion[] splitButtonTextureRegions;
+    private ITextureRegion[] standButtonTextureRegions;
+    private ITextureRegion[] surrenderButtonTextureRegions;
+
+    private ButtonSprite betButton;
+    private ButtonSprite doubleDownButton;
+    private ButtonSprite hitButton;
+    private ButtonSprite insuranceButton;
+    private ButtonSprite readyButton;
+    private ButtonSprite splitButton;
+    private ButtonSprite standButton;
+    private ButtonSprite surrenderButton;
 
     @Override
     protected void onBeforeCreateEngineOptions() {
@@ -73,21 +96,31 @@ public class BlackjackGameActivity extends CardGameActivity {
     protected void onCreateCardGameResources() {
         setCardTextureRegions(TextureUtility.loadCards92x128(this));
 
-        handHighlightColor = new Color(88f, 77f, 209f, 0.5f);
-        bankColor = new Color(0, 0, 1, 1);
-        betColor = new Color(0, 0, 1, 1);
+        betButtonTextureRegions = TextureUtility.loadBlackjackBetButton(this);
+        doubleDownButtonTextureRegions = TextureUtility.loadBlackjackDoubleDownButton(this);
+        hitButtonTextureRegions = TextureUtility.loadBlackjackHitButton(this);
+        insuranceButtonTextureRegions = TextureUtility.loadBlackjackInsuranceButton(this);
+        readyButtonTextureRegions = TextureUtility.loadBlackjackReadyButton(this);
+        splitButtonTextureRegions = TextureUtility.loadBlackjackSplitButton(this);
+        standButtonTextureRegions = TextureUtility.loadBlackjackStandButton(this);
+        surrenderButtonTextureRegions = TextureUtility.loadBlackjackSurrenderButton(this);
 
-        boldFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
-                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32);
-        boldFont.load();
+        handHighlightColor = new Color(88f, 77f, 209f, 0.5f);
+        insuranceColor = new Color(1, 1, 0, 1);
+        playerColor = new Color(0, 0, 1, 1);
+        betColor = new Color(0, 0, 1, 1);
 
         deckSizeFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
                 Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32);
         deckSizeFont.load();
 
-        bankFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
-                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, bankColor.getARGBPackedInt());
-        bankFont.load();
+        insuranceFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
+                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, insuranceColor.getARGBPackedInt());
+        insuranceFont.load();
+
+        playerFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
+                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, playerColor.getARGBPackedInt());
+        playerFont.load();
 
         betFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
                 Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 24, betColor.getARGBPackedInt());
@@ -96,7 +129,11 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     @Override
     protected void onCreateCardGameScene(final CardGameScene scene) {
+        setGameMenuButtonVisibility(false);
+
         createAndDrawPositionBoxes(scene);
+
+        createAndAttachButtons(scene);
 
         deckX = (getCameraWidth() / 2f) - 200f;
         deckY = 25f;
@@ -111,11 +148,12 @@ public class BlackjackGameActivity extends CardGameActivity {
     private void createAndDrawPositionBoxes(final CardGameScene scene) {
         float arcCenterX = getCameraWidth() / 2f;
         float arcCenterY = -1200f;
-        float arcRadius = 1550f;
-        double spacingAngle = .044d * Math.PI;
+        float arcRadius = 1500f;
+        double spacingAngle = .046d * Math.PI;
         double currentAngle = 0;
 
         positionBoxes = new PositionBox[getGame().getPlayers().size()];
+        insuranceTexts = new Text[getGame().getPlayers().size()];
         playerTexts = new Text[getGame().getPlayers().size()];
         for (int n = 0; n < getGame().getPlayers().size(); n++) {
             if (n == 0) {
@@ -130,10 +168,59 @@ public class BlackjackGameActivity extends CardGameActivity {
             positionBoxes[n] = createPositionBox(pbX, pbY, 0);
             scene.attachChild(positionBoxes[n]);
 
-            playerTexts[n] = new Text(pbX, pbY + POSITION_BOX_HEIGHT + 30, bankFont,
+            insuranceTexts[n] = new Text(pbX, pbY + POSITION_BOX_HEIGHT + 10, insuranceFont,
+                    "", 20, new TextOptions(HorizontalAlign.CENTER), getVertexBufferObjectManager());
+            getCardGameScene().attachChild(insuranceTexts[n]);
+
+            playerTexts[n] = new Text(pbX, pbY + POSITION_BOX_HEIGHT + 5 + insuranceFont.getLineHeight(), playerFont,
                     "", 100, new TextOptions(HorizontalAlign.CENTER), getVertexBufferObjectManager());
             getCardGameScene().attachChild(playerTexts[n]);
+
         }
+    }
+
+    private void createAndAttachButtons(final CardGameScene scene) {
+        betButton = createButton(0, 0, betButtonTextureRegions, new BetClickListener(), scene);
+        doubleDownButton = createButton(0, 0, doubleDownButtonTextureRegions, new DoubleDownClickListener(), scene);
+        hitButton = createButton(0, 0, hitButtonTextureRegions, new HitClickListener(), scene);
+        insuranceButton = createButton(0, 0, insuranceButtonTextureRegions, new InsuranceClickListener(), scene);
+        readyButton = createButton(0, 0, readyButtonTextureRegions, new ReadyClickListener(), scene);
+        splitButton = createButton(0, 0, splitButtonTextureRegions, new SplitClickListener(), scene);
+        standButton = createButton(0, 0, standButtonTextureRegions, new StandClickListener(), scene);
+        surrenderButton = createButton(0, 0, surrenderButtonTextureRegions, new SurrenderClickListener(), scene);
+
+        readyButton.setPosition(BUTTON_SPACING,
+                getCameraHeight() - (2 * (BUTTON_SPACING + readyButton.getHeight())));
+        betButton.setPosition(BUTTON_SPACING,
+                getCameraHeight() - (BUTTON_SPACING + betButton.getHeight()));
+
+        hitButton.setPosition((getCameraWidth() / 2f) - ((2f * hitButton.getWidth()) + (1.5f * BUTTON_SPACING)),
+                getCameraHeight() - (BUTTON_SPACING + hitButton.getHeight()));
+        standButton.setPosition((getCameraWidth() / 2f) - (standButton.getWidth() + (0.5f * BUTTON_SPACING)),
+                getCameraHeight() - (BUTTON_SPACING + standButton.getHeight()));
+        splitButton.setPosition((getCameraWidth() / 2f) + (0.5f * BUTTON_SPACING),
+                getCameraHeight() - (BUTTON_SPACING + splitButton.getHeight()));
+        doubleDownButton.setPosition((getCameraWidth() / 2f) + (doubleDownButton.getWidth() + (1.5f * BUTTON_SPACING)),
+                getCameraHeight() - (BUTTON_SPACING + doubleDownButton.getHeight()));
+
+        insuranceButton.setPosition(getCameraWidth() - (BUTTON_SPACING + insuranceButton.getWidth()),
+                getCameraHeight() - (2 * (BUTTON_SPACING + insuranceButton.getHeight())));
+        surrenderButton.setPosition(getCameraWidth() - (BUTTON_SPACING + surrenderButton.getWidth()),
+                getCameraHeight() - (BUTTON_SPACING + surrenderButton.getHeight()));
+    }
+
+    private ButtonSprite createButton(final float x, final float y, final ITextureRegion[] textureRegions,
+                                      final ButtonSprite.OnClickListener clickListener,
+                                      final CardGameScene scene) {
+        ButtonSprite buttonSprite = new ButtonSprite(
+                x, y,
+                textureRegions[TextureUtility.BUTTON_STATE_UP],
+                textureRegions[TextureUtility.BUTTON_STATE_DOWN],
+                textureRegions[TextureUtility.BUTTON_STATE_DISABLED],
+                this.getVertexBufferObjectManager());
+        buttonSprite.setOnClickListener(clickListener);
+        scene.attachButtonSprite(buttonSprite);
+        return buttonSprite;
     }
 
     private PositionBox createPositionBox(final float x, final float y, final float angle) {
@@ -183,11 +270,26 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     protected void afterCleared() {
         if (getGameState() != null) {
+            adjustButtonStates();
             displayDeck();
             displayDealerHand();
             displayPlayersHands();
         } else {
             Debug.d("CardGames", "GameState is null. [afterCleared()]");
+        }
+    }
+
+    private void adjustButtonStates() {
+        BlackjackMovesAvailable movesAvailable = (BlackjackMovesAvailable) getLatestAction().getMovesAvailable();
+        if (movesAvailable != null) {
+            betButton.setEnabled(movesAvailable.isBet());
+            doubleDownButton.setEnabled(movesAvailable.isDoubleDown());
+            hitButton.setEnabled(movesAvailable.isHit());
+            insuranceButton.setEnabled(movesAvailable.isInsurance());
+            readyButton.setEnabled(movesAvailable.isReady());
+            splitButton.setEnabled(movesAvailable.isSplit());
+            standButton.setEnabled(movesAvailable.isStand());
+            surrenderButton.setEnabled(movesAvailable.isSurrender());
         }
     }
 
@@ -250,12 +352,7 @@ public class BlackjackGameActivity extends CardGameActivity {
         float cardWidth = getRedBack().getWidth();
         float cardHeight = getRedBack().getHeight();
 
-        float startY;
-        if (playerHands.getHands().size() > 2) {
-            startY = boxTopY + (boxHeight / 2);
-        } else {
-            startY = boxTopY + ((boxHeight - cardHeight) / 2);
-        }
+        float startY = boxTopY + ((boxHeight - cardHeight) / 2);
         for (int n = 0; n < playerHands.getHands().size(); n+=2) {
             boolean twoColumns = playerHands.getHands().size() > 1;
             GamePlayer nextActionPlayer = getLatestAction().getNextActionPlayer();
@@ -272,6 +369,19 @@ public class BlackjackGameActivity extends CardGameActivity {
             }
             startY -= cardHeight + 20;
         }
+
+        Text insuranceText = insuranceTexts[turnNumber];
+        Integer insurance = playerHands.getInsurance();
+        BlackjackMovesAvailable movesAvailable = getLatestAction().getMovesAvailable() != null
+                ? (BlackjackMovesAvailable) getLatestAction().getMovesAvailable() : new BlackjackMovesAvailable();
+        if (movesAvailable.isInsurance()) {
+            insuranceText.setText("Insurance?");
+        } else if (insurance != null) {
+            insuranceText.setText("Ins. ($" + insurance + ")");
+        } else {
+            insuranceText.setText("");
+        }
+        insuranceText.setPosition(boxCenterX - (insuranceText.getWidth() / 2), insuranceText.getY());
 
         Text playerText = playerTexts[turnNumber];
         playerText.setText(player.getFirstname() + "\n$" + getGameState().getPlayersBanks().get(player));
@@ -334,6 +444,70 @@ public class BlackjackGameActivity extends CardGameActivity {
                 getCardGameScene().moveCardSpriteToFront(faceUpCardSprite);
                 cardX += CARD_SPACING;
             }
+        }
+    }
+
+    private class BetClickListener implements ButtonSprite.OnClickListener {
+        @Override
+        public void onClick(final ButtonSprite pButtonSprite,
+                            final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            Debug.d("CardGames", "Bet clicked.");
+        }
+    }
+
+    private class DoubleDownClickListener implements ButtonSprite.OnClickListener {
+        @Override
+        public void onClick(final ButtonSprite pButtonSprite,
+                            final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            Debug.d("CardGames", "Double Down clicked.");
+        }
+    }
+
+    private class HitClickListener implements ButtonSprite.OnClickListener {
+        @Override
+        public void onClick(final ButtonSprite pButtonSprite,
+                            final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            Debug.d("CardGames", "Hit clicked.");
+        }
+    }
+
+    private class InsuranceClickListener implements ButtonSprite.OnClickListener {
+        @Override
+        public void onClick(final ButtonSprite pButtonSprite,
+                            final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            Debug.d("CardGames", "Insurance clicked.");
+        }
+    }
+
+    private class ReadyClickListener implements ButtonSprite.OnClickListener {
+        @Override
+        public void onClick(final ButtonSprite pButtonSprite,
+                            final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            Debug.d("CardGames", "Ready clicked.");
+        }
+    }
+
+    private class SplitClickListener implements ButtonSprite.OnClickListener {
+        @Override
+        public void onClick(final ButtonSprite pButtonSprite,
+                            final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            Debug.d("CardGames", "Split clicked.");
+        }
+    }
+
+    private class StandClickListener implements ButtonSprite.OnClickListener {
+        @Override
+        public void onClick(final ButtonSprite pButtonSprite,
+                            final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            Debug.d("CardGames", "Stand clicked.");
+        }
+    }
+
+    private class SurrenderClickListener implements ButtonSprite.OnClickListener {
+        @Override
+        public void onClick(final ButtonSprite pButtonSprite,
+                            final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            Debug.d("CardGames", "Surrender clicked.");
         }
     }
 }
