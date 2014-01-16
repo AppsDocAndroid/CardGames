@@ -176,14 +176,7 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
         Debug.d("CardGames", "updateLatestAction()");
         GameAction newLatestAction;
         try {
-            newLatestAction = (new LatestActionTask()).execute(game).get();
-
-            if (newLatestAction != null
-                    && (this.latestAction == null
-                        || this.latestAction.getActionNumber() != newLatestAction.getActionNumber())) {
-                this.latestAction = newLatestAction;
-                onLatestActionUpdated(this.latestAction);
-            }
+            updateLatestAction((new LatestActionTask()).execute(game).get());
         } catch (Exception e) {
             Debug.d("CardGames", "updateLatestAction() failed.", e);
         }
@@ -192,6 +185,15 @@ public abstract class CardGameActivity extends SimpleBaseGameActivity {
             this.latestAction = new GameAction();
             this.latestAction.setActionNumber(-1);
             this.latestAction.setGame(getGame());
+        }
+    }
+
+    protected void updateLatestAction(final GameAction newLatestAction) {
+        if (newLatestAction != null
+                && (this.latestAction == null
+                || this.latestAction.getActionNumber() != newLatestAction.getActionNumber())) {
+            this.latestAction = newLatestAction;
+            onLatestActionUpdated(this.latestAction);
         }
     }
 

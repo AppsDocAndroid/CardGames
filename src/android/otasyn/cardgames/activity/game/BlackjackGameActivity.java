@@ -5,7 +5,18 @@
  */
 package android.otasyn.cardgames.activity.game;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Typeface;
+import android.otasyn.cardgames.R;
+import android.otasyn.cardgames.communication.asynctask.games.blackjack.BlackjackBetTask;
+import android.otasyn.cardgames.communication.asynctask.games.blackjack.BlackjackDoubleDownTask;
+import android.otasyn.cardgames.communication.asynctask.games.blackjack.BlackjackHitTask;
+import android.otasyn.cardgames.communication.asynctask.games.blackjack.BlackjackInsuranceTask;
+import android.otasyn.cardgames.communication.asynctask.games.blackjack.BlackjackReadyTask;
+import android.otasyn.cardgames.communication.asynctask.games.blackjack.BlackjackSplitTask;
+import android.otasyn.cardgames.communication.asynctask.games.blackjack.BlackjackStandTask;
+import android.otasyn.cardgames.communication.asynctask.games.blackjack.BlackjackSurrenderTask;
 import android.otasyn.cardgames.communication.dto.GameAction;
 import android.otasyn.cardgames.communication.dto.GamePlayer;
 import android.otasyn.cardgames.communication.dto.gamestate.BlackjackState;
@@ -18,6 +29,8 @@ import android.otasyn.cardgames.scene.CardGameScene;
 import android.otasyn.cardgames.sprite.CardSprite;
 import android.otasyn.cardgames.utility.TextureUtility;
 import android.otasyn.cardgames.utility.enumeration.Card;
+import android.view.LayoutInflater;
+import android.widget.NumberPicker;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.ButtonSprite;
@@ -452,6 +465,33 @@ public class BlackjackGameActivity extends CardGameActivity {
         public void onClick(final ButtonSprite pButtonSprite,
                             final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
             Debug.d("CardGames", "Bet clicked.");
+            BlackjackGameActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(BlackjackGameActivity.this);
+                    LayoutInflater inflater = BlackjackGameActivity.this.getLayoutInflater();
+                    final AlertDialog dialog = alertBuilder
+                            .setView(inflater.inflate(R.layout.popup_blackjack_bet, null))
+                            .setCancelable(true)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog, final int which) {
+                                    AlertDialog alertDialog = (AlertDialog) dialog;
+                                    int bet = ((NumberPicker) alertDialog.findViewById(R.id.betAmount)).getValue();
+                                    alertDialog.dismiss();
+                                    try {
+                                        updateLatestAction((new BlackjackBetTask()).execute(
+                                                getGame().getId().toString(), String.valueOf(bet)).get());
+                                    } catch (Exception e) { }
+                                }
+                            })
+                            .create();
+                    dialog.show();
+                    NumberPicker numberPicker = (NumberPicker) dialog.findViewById(R.id.betAmount);
+                    numberPicker.setMinValue(10);
+                    numberPicker.setMaxValue(100);
+                }
+            });
         }
     }
 
@@ -460,6 +500,34 @@ public class BlackjackGameActivity extends CardGameActivity {
         public void onClick(final ButtonSprite pButtonSprite,
                             final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
             Debug.d("CardGames", "Double Down clicked.");
+            BlackjackGameActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(BlackjackGameActivity.this);
+                    LayoutInflater inflater = BlackjackGameActivity.this.getLayoutInflater();
+                    final AlertDialog dialog = alertBuilder
+                            .setView(inflater.inflate(R.layout.popup_blackjack_doubledown, null))
+                            .setCancelable(true)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog, final int which) {
+                                    AlertDialog alertDialog = (AlertDialog) dialog;
+                                    int bet = ((NumberPicker) alertDialog.findViewById(
+                                            R.id.doubleDownAmount)).getValue();
+                                    alertDialog.dismiss();
+                                    try {
+                                        updateLatestAction((new BlackjackDoubleDownTask()).execute(
+                                                getGame().getId().toString(), String.valueOf(bet)).get());
+                                    } catch (Exception e) { }
+                                }
+                            })
+                            .create();
+                    dialog.show();
+                    NumberPicker numberPicker = (NumberPicker) dialog.findViewById(R.id.doubleDownAmount);
+                    numberPicker.setMinValue(10);
+                    numberPicker.setMaxValue(100);
+                }
+            });
         }
     }
 
@@ -468,6 +536,9 @@ public class BlackjackGameActivity extends CardGameActivity {
         public void onClick(final ButtonSprite pButtonSprite,
                             final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
             Debug.d("CardGames", "Hit clicked.");
+            try {
+                updateLatestAction((new BlackjackHitTask()).execute(getGame().getId().toString()).get());
+            } catch (Exception e) { }
         }
     }
 
@@ -476,6 +547,34 @@ public class BlackjackGameActivity extends CardGameActivity {
         public void onClick(final ButtonSprite pButtonSprite,
                             final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
             Debug.d("CardGames", "Insurance clicked.");
+            BlackjackGameActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(BlackjackGameActivity.this);
+                    LayoutInflater inflater = BlackjackGameActivity.this.getLayoutInflater();
+                    final AlertDialog dialog = alertBuilder
+                            .setView(inflater.inflate(R.layout.popup_blackjack_insurance, null))
+                            .setCancelable(true)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog, final int which) {
+                                    AlertDialog alertDialog = (AlertDialog) dialog;
+                                    int bet = ((NumberPicker) alertDialog.findViewById(
+                                            R.id.insuranceAmount)).getValue();
+                                    alertDialog.dismiss();
+                                    try {
+                                        updateLatestAction((new BlackjackInsuranceTask()).execute(
+                                                getGame().getId().toString(), String.valueOf(bet)).get());
+                                    } catch (Exception e) { }
+                                }
+                            })
+                            .create();
+                    dialog.show();
+                    NumberPicker numberPicker = (NumberPicker) dialog.findViewById(R.id.insuranceAmount);
+                    numberPicker.setMinValue(10);
+                    numberPicker.setMaxValue(100);
+                }
+            });
         }
     }
 
@@ -484,6 +583,9 @@ public class BlackjackGameActivity extends CardGameActivity {
         public void onClick(final ButtonSprite pButtonSprite,
                             final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
             Debug.d("CardGames", "Ready clicked.");
+            try {
+                updateLatestAction((new BlackjackReadyTask()).execute(getGame().getId().toString()).get());
+            } catch (Exception e) { }
         }
     }
 
@@ -492,6 +594,9 @@ public class BlackjackGameActivity extends CardGameActivity {
         public void onClick(final ButtonSprite pButtonSprite,
                             final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
             Debug.d("CardGames", "Split clicked.");
+            try {
+                updateLatestAction((new BlackjackSplitTask()).execute(getGame().getId().toString()).get());
+            } catch (Exception e) { }
         }
     }
 
@@ -500,6 +605,9 @@ public class BlackjackGameActivity extends CardGameActivity {
         public void onClick(final ButtonSprite pButtonSprite,
                             final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
             Debug.d("CardGames", "Stand clicked.");
+            try {
+                updateLatestAction((new BlackjackStandTask()).execute(getGame().getId().toString()).get());
+            } catch (Exception e) { }
         }
     }
 
@@ -508,6 +616,9 @@ public class BlackjackGameActivity extends CardGameActivity {
         public void onClick(final ButtonSprite pButtonSprite,
                             final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
             Debug.d("CardGames", "Surrender clicked.");
+            try {
+                updateLatestAction((new BlackjackSurrenderTask()).execute(getGame().getId().toString()).get());
+            } catch (Exception e) { }
         }
     }
 }

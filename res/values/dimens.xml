@@ -18,6 +18,11 @@
     <dimen name="awaitingConfirmationTopBottomPadding">0dp</dimen>
 
     <dimen name="deckOptionsHeaderPadding">5dip</dimen>
-    <dimen name="dealHeaderMargin">5dip</dimen><dimen name="gameMenuHeaderMargin">5dip</dimen>
+    <dimen name="dealHeaderMargin">5dip</dimen>
+    <dimen name="gameMenuHeaderMargin">5dip</dimen>
+
+    <dimen name="blackjackBetHeaderMargin">5dip</dimen>
+    <dimen name="blackjackDoubleDownHeaderMargin">5dip</dimen>
+    <dimen name="blackjackInsuranceHeaderMargin">5dip</dimen>
 
 </resources>

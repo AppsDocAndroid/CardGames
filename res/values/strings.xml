@@ -46,6 +46,10 @@
     <string name="deckOptionsDrawButton">Draw</string>
     <string name="dealHeader">How many cards will you deal to each person?</string>
 
+    <string name="blackjackBetHeader">How much will you bet?</string>
+    <string name="blackjackDoubleDownHeader">How much will you bet?</string>
+    <string name="blackjackInsuranceHeader">How much will you bet?</string>
+
     <string name="gameMenuHeader">Game Menu</string><string name="gameMenuEndTurn">End Turn</string>
 
 </resources>
