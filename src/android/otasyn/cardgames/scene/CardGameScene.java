@@ -9,6 +9,7 @@ import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.ButtonSprite;
+import org.andengine.entity.text.Text;
 import org.andengine.input.touch.TouchEvent;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
 
 public class CardGameScene extends Scene {
 
+    private static final int TEXT_ZINDEX_START = 2000;
     private static final int BUTTONS_ZINDEX_START = 1500;
     private static final int CARDS_ZINDEX_START = 1000;
     private static final int HAND_HIGHLIGHT_ZINDEX = 500;
@@ -27,9 +29,16 @@ public class CardGameScene extends Scene {
     public void attachChild(final IEntity pEntity) throws IllegalStateException {
         if (pEntity instanceof CardSprite) {
             attachCardSprite((CardSprite) pEntity);
+        } else if (pEntity instanceof Text) {
+            attachText((Text) pEntity);
         } else {
             super.attachChild(pEntity);
         }
+    }
+
+    public void attachText(final Text text) {
+        super.attachChild(text);
+        text.setZIndex(TEXT_ZINDEX_START);
     }
 
     public void attachButtonSprite(final ButtonSprite buttonSprite) {

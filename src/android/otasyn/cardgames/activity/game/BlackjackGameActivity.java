@@ -70,17 +70,20 @@ public class BlackjackGameActivity extends CardGameActivity {
     private Font insuranceFont;
     private Font playerFont;
     private Font betFont;
+    private Font statusFont;
 
     private Text deckSizeText;
     private Text[] insuranceTexts;
     private Text[] playerTexts;
     private HandHighlight handHighlight;
     private List<Text> betTexts;
+    private Text statusText;
 
     private Color insuranceColor;
     private Color playerColor;
     private Color handHighlightColor;
     private Color betColor;
+    private Color statusColor;
 
     private PositionBox[] positionBoxes;
     private ITextureRegion[] betButtonTextureRegions;
@@ -124,6 +127,7 @@ public class BlackjackGameActivity extends CardGameActivity {
         insuranceColor = new Color(1, 1, 0, 1);
         playerColor = new Color(0, 0, 1, 1);
         betColor = new Color(0, 0, 1, 1);
+        statusColor = new Color(0, 0, 1, 1);
 
         deckSizeFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
                 Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32);
@@ -140,22 +144,28 @@ public class BlackjackGameActivity extends CardGameActivity {
         betFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
                 Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 24, betColor.getARGBPackedInt());
         betFont.load();
+
+        statusFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256,
+                Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 40, statusColor.getARGBPackedInt());
+        statusFont.load();
     }
 
     @Override
     protected void onCreateCardGameScene(final CardGameScene scene) {
         setGameMenuButtonVisibility(false);
-
         createAndDrawPositionBoxes(scene);
-
         createAndAttachButtons(scene);
 
-        deckX = (getCameraWidth() / 2f) - 200f;
+        deckX = (getCameraWidth() / 2f) - 100f;
         deckY = 25f;
         deckWidth = getRedBack().getWidth();
         deckHeight = getRedBack().getHeight();
 
         betTexts = new ArrayList<Text>();
+
+        statusText = new Text(6, 6, statusFont, "", 200, new TextOptions(HorizontalAlign.LEFT),
+                getVertexBufferObjectManager());
+        getCardGameScene().attachChild(statusText);
 
         displayAll();
     }
@@ -285,6 +295,7 @@ public class BlackjackGameActivity extends CardGameActivity {
 
     protected void afterCleared() {
         if (getGameState() != null) {
+            updateStatus();
             adjustButtonStates();
             displayDeck();
             displayDealerHand();
@@ -292,6 +303,123 @@ public class BlackjackGameActivity extends CardGameActivity {
         } else {
             Debug.d("CardGames", "GameState is null. [afterCleared()]");
         }
+    }
+
+    private void updateStatus() {
+        BlackjackMovesAvailable movesAvailable = (BlackjackMovesAvailable) getLatestAction().getMovesAvailable();
+        String status = "";
+        if (movesAvailable != null) {
+            if (movesAvailable.isReady()) {
+                status = "Hand finished.\n";
+
+                BlackjackState gameState = getGameState();
+                GamePlayer player = getCurrentPlayer();
+                PlayerHands playerHands = gameState.getPlayersHands().get(player);
+                if (playerHands.isSurrendered()) {
+                    status = "You surrendered.";
+                } else {
+                    if (isBlackjack(gameState.getDealerHand().getFaceUpCards())) {
+                        if (playerHands.getHands().size() == 1) {
+                            if (isBlackjack(playerHands.getHands().get(0).getHand())) {
+                                status += "Push.";
+                            } else {
+                                status += "Dealer has Blackjack.";
+                            }
+                        }
+                    } else {
+                        if (playerHands.getHands().size() > 1) {
+                            int numWin = 0;
+                            int numPush = 0;
+                            int numLose = 0;
+                            for (PlayerHand playerHand : playerHands.getHands()) {
+                                int handValue = evaluateHand(playerHand.getHand());
+                                int dealerHandValue = evaluateHand(gameState.getDealerHand().getFaceUpCards());
+                                if (handValue > BlackjackContants.BLACKJACK_MAX) {
+                                    numLose++;
+                                } else if (dealerHandValue > BlackjackContants.BLACKJACK_MAX) {
+                                    numWin++;
+                                } else if (handValue > dealerHandValue) {
+                                    numWin++;
+                                } else if (handValue == dealerHandValue) {
+                                    numPush++;
+                                } else {
+                                    numLose++;
+                                }
+                            }
+                            if (numWin > 0) {
+                                status += "Win " + numWin + ".";
+                            }
+                            if (numPush > 0) {
+                                status += (numWin > 0 ? " " : "") + "Push " + numPush + ".";
+                            }
+                            if (numLose > 0) {
+                                status += (numWin > 0 || numPush > 0 ? " " : "") + "Lose " + numLose + ".";
+                            }
+                        } else {
+                            List<Card> hand = playerHands.getHands().get(0).getHand();
+                            if (isBlackjack(hand)) {
+                                status += "You have Blackjack.";
+                            } else {
+                                int handValue = evaluateHand(hand);
+                                int dealerHandValue = evaluateHand(gameState.getDealerHand().getFaceUpCards());
+                                if (handValue > BlackjackContants.BLACKJACK_MAX) {
+                                    status += "You busted.";
+                                } else if (dealerHandValue > BlackjackContants.BLACKJACK_MAX) {
+                                    status += "Dealer busts.";
+                                } else if (handValue > dealerHandValue) {
+                                    status += "You win.";
+                                } else if (handValue == dealerHandValue) {
+                                    status += "Push.";
+                                } else {
+                                    status += "You lose.";
+                                }
+                            }
+                        }
+                    }
+                }
+
+            } else if (movesAvailable.isBet()) {
+                status = "Please make a bet.";
+            } else if (movesAvailable.isInsurance()) {
+                status = "Would you like insurance?";
+            } else if (movesAvailable.isHit()
+                    || movesAvailable.isStand()
+                    || movesAvailable.isDoubleDown()
+                    || movesAvailable.isSplit()
+                    || movesAvailable.isSurrender()) {
+                status = "Your turn.";
+            } else {
+                status = "Waiting on other players.";
+            }
+        }
+        statusText.setText(status);
+    }
+
+    private boolean isBlackjack(final List<Card> hand) {
+        if (hand.size() == 2
+                && ((hand.get(0).getRank().getMaxBlackjackValue() == 10
+                        && hand.get(1).getRank() == Rank.ACE)
+                    || (hand.get(0).getRank() == Rank.ACE
+                        && hand.get(1).getRank().getMaxBlackjackValue() == 10))) {
+            return true;
+        }
+        return false;
+    }
+
+    private int evaluateHand(final List<Card> hand) {
+        int numAces = 0;
+        int total = 0;
+        for (Card card : hand) {
+            total += card.getRank().getMaxBlackjackValue();
+            if (card.getRank() == Rank.ACE) {
+                numAces++;
+            }
+        }
+        while (numAces > 0 && total > BlackjackContants.BLACKJACK_MAX) {
+            numAces--;
+            total -= (Rank.ACE.getMaxBlackjackValue() - Rank.ACE.getMinBlackjackValue());
+        }
+        return total;
     }
 
     private void adjustButtonStates() {
