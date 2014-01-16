@@ -29,6 +29,7 @@ import android.otasyn.cardgames.scene.CardGameScene;
 import android.otasyn.cardgames.sprite.CardSprite;
 import android.otasyn.cardgames.utility.TextureUtility;
 import android.otasyn.cardgames.utility.enumeration.Card;
+import android.otasyn.cardgames.utility.enumeration.Rank;
 import android.view.LayoutInflater;
 import android.widget.NumberPicker;
 import org.andengine.engine.options.ScreenOrientation;
@@ -387,9 +388,21 @@ public class BlackjackGameActivity extends CardGameActivity {
         Integer insurance = playerHands.getInsurance();
         BlackjackMovesAvailable movesAvailable = getLatestAction().getMovesAvailable() != null
                 ? (BlackjackMovesAvailable) getLatestAction().getMovesAvailable() : new BlackjackMovesAvailable();
-        if (movesAvailable.isInsurance()) {
+
+        boolean dealerAceShowing = false;
+        if (getGameState() != null
+                && getGameState().getDealerHand() != null
+                && !getGameState().getDealerHand().getFaceUpCards().isEmpty()) {
+            if (getGameState().getDealerHand().getFaceDownCard() != null) {
+                dealerAceShowing = getGameState().getDealerHand().getFaceUpCards().get(0).getRank() == Rank.ACE;
+            } else {
+                dealerAceShowing = getGameState().getDealerHand().getFaceUpCards().get(1).getRank() == Rank.ACE;
+            }
+        }
+
+        if (dealerAceShowing && movesAvailable.isInsurance()) {
             insuranceText.setText("Insurance?");
-        } else if (insurance != null) {
+        } else if (dealerAceShowing && insurance != null) {
             insuranceText.setText("Ins. ($" + insurance + ")");
         } else {
             insuranceText.setText("");
